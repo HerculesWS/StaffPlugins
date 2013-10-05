@@ -42,7 +42,7 @@ int map_vendingstat_npcshop_sub(struct npc_data *nd, va_list ap) {
 		return 0;
 	
 	if ( nd->bl.m )
-		SQL->EscapeStringLen(mysql_handle, map_esc, map[nd->bl.m].name, strnlen(map[nd->bl.m].name,MAP_NAME_LENGTH));
+		SQL->EscapeStringLen(mysql_handle, map_esc, map->list[nd->bl.m].name, strnlen(map->list[nd->bl.m].name,MAP_NAME_LENGTH));
 	
 	sscanf(nd->name, "%23[^#]", name);
 	SQL->EscapeStringLen(mysql_handle, name_esc, name, strnlen(name,NAME_LENGTH));
@@ -70,7 +70,7 @@ int map_vendingstat_tosql_timer(int tid, unsigned int tick, int id, intptr_t dat
 	StringBuf *buf = StrBuf->Malloc();
 	iter = mapit_getallusers();
 	
-	iTimer->add_timer(iTimer->gettick() + vendingstat_refresh_sec*1000,map_vendingstat_tosql_timer,0,0);
+	timer->add(timer->gettick() + vendingstat_refresh_sec*1000,map_vendingstat_tosql_timer,0,0);
 	
 	StrBuf->Printf(buf, "INSERT DELAYED INTO `%s` (`type`,`owner`,`shop`,`map`,`x`,`y`,`nameid`,`refine`,`card0`,`card1`,`card2`,`card3`,`amount`,`price`) VALUES ", vendingstat_table);
 	
@@ -81,7 +81,7 @@ int map_vendingstat_tosql_timer(int tid, unsigned int tick, int id, intptr_t dat
 		char shop_esc[MESSAGE_SIZE*2+1];
 		int i;
 		
-		SQL->EscapeStringLen(mysql_handle, map_esc, map[sd->bl.m].name, strnlen(map[sd->bl.m].name,MAP_NAME_LENGTH));
+		SQL->EscapeStringLen(mysql_handle, map_esc, map->list[sd->bl.m].name, strnlen(map->list[sd->bl.m].name,MAP_NAME_LENGTH));
 		SQL->EscapeStringLen(mysql_handle, name_esc, sd->status.name, strnlen(sd->status.name,NAME_LENGTH));
 		SQL->EscapeStringLen(mysql_handle, shop_esc, sd->message, strnlen(sd->message,MESSAGE_SIZE));
 		
@@ -119,7 +119,7 @@ int map_vendingstat_tosql_timer(int tid, unsigned int tick, int id, intptr_t dat
 	}
 	
 	// Now the NPC shops.
-	iMap->map_foreachnpc(map_vendingstat_npcshop_sub, buf, &n);
+	map->map_foreachnpc(map_vendingstat_npcshop_sub, buf, &n);
 	
 	// Clear table
 	if ( SQL_ERROR == SQL->Query(mysql_handle, "DELETE FROM `%s`", vendingstat_table) )
@@ -140,7 +140,7 @@ int map_vendingstat_tosql_timer(int tid, unsigned int tick, int id, intptr_t dat
 
 void do_init_vendingstat()
 {
-	iTimer->add_timer(iTimer->gettick()+vendingstat_refresh_sec*1000,map_vendingstat_tosql_timer,0,0);
+	timer->add(timer->gettick()+vendingstat_refresh_sec*1000,map_vendingstat_tosql_timer,0,0);
 	
 	if ( SQL_ERROR == SQL->Query(mysql_handle, "CREATE TABLE IF NOT EXISTS `%s` ("
 								"`type` tinyint(3) unsigned NOT NULL,"
@@ -168,9 +168,8 @@ HPExport void plugin_init (void) {
 	StrBuf = GET_SYMBOL("StrBuf");
 	SQL = GET_SYMBOL("SQL");
 	map = GET_SYMBOL("map");
-	iMap = GET_SYMBOL("iMap");
 	mapit = GET_SYMBOL("mapit");
-	iTimer = GET_SYMBOL("iTimer");
+	timer = GET_SYMBOL("timer");
 }
 
 /* run when server is ready (online) */

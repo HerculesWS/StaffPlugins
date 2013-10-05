@@ -29,7 +29,7 @@ ACMD(debugcd) {
 		return false;
 	}
 	
-	if( !(pl_sd = iMap->nick2sd(message)) ) {
+	if( !(pl_sd = map->nick2sd(message)) ) {
 		clif->message(fd,"Character name not found");
 		return false;
 	}
@@ -49,7 +49,7 @@ ACMD(debugcd) {
 
 HPExport void plugin_init (void) {
 	skill = GET_SYMBOL("skill");
-	iMap = GET_SYMBOL("iMap");
+	map = GET_SYMBOL("map");
 	DB = GET_SYMBOL("DB");
 	clif = GET_SYMBOL("clif");
 
