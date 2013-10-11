@@ -3,6 +3,7 @@ Hercules Staff Plugins : @shennetsind Index
 Table of Contents
 ---------
 * 1 SkillErrorMessages
+* 2 @storeitem
 
 1. SkillErrorMessages
 ---------
@@ -15,3 +16,9 @@ becomes
 
         %s requires a total %d spirit spheres
 (%s being the skill name, %d the amount of spirit spheres)
+
+2. @storeitem
+---------
+Implements the @storeitem command, it creates and places items in a any online character storage, very handy for handing out rewards on in-game events.
+Syntax: @storeitem <item name or ID> <quantity> <refine> <char name>
+Designed by Beowulf/Nightroad
