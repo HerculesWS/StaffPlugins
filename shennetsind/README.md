@@ -1,7 +1,7 @@
 Hercules Staff Plugins : @shennetsind Index
 ============
 How to Install a Plugin: http://hercules.ws/wiki/HPM#Building_a_plugin (Building a Plugin)
-============
+-------------
 Table of Contents
 ---------
 * 1 SkillErrorMessages
