@@ -10,7 +10,7 @@ Automatically creates a table in your mysql database (and populates it) with all
 updates itself every 5 minutes, the data stored is the following:
 
     `type` tinyint(3) unsigned NOT NULL
-	`owner` varchar(23) NOT NULL
+    `owner` varchar(23) NOT NULL
 	`shop` varchar(79) NOT NULL
 	`map` varchar(11) NOT NULL
 	`x` smallint(5) unsigned NOT NULL
@@ -26,4 +26,4 @@ updates itself every 5 minutes, the data stored is the following:
 
 The plugin will automatically create, update and clear the table, so you have to do nothing.
 ============
-How to Install a Plugin: http://hercules.ws/wiki/HPM#Building_a_plugin (Building a Plugin)
+####How to Install a Plugin: http://hercules.ws/wiki/HPM#Building_a_plugin (Building a Plugin)
