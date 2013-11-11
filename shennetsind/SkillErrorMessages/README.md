@@ -6,10 +6,12 @@ Replaces client-side error messages by custom server-side error messages, for sk
 
 * 1: Not Enough Spirit Spheres Message
 
-        %d requires a total mind bullets
+      %d requires a total mind bullets
 becomes
 
-        %s requires a total %d spirit spheres
+      %s requires a total %d spirit spheres
+
 (%s being the skill name, %d the amount of spirit spheres)
-============
+
+***
 How to Install a Plugin: http://hercules.ws/wiki/HPM#Building_a_plugin (Building a Plugin)
