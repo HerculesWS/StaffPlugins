@@ -38,7 +38,7 @@ struct s_cooldown_rate {
 int skill_blockpc_start_preHook(struct map_session_data *sd, uint16 *skill_id, int *tick, bool *load) {
 	struct s_cooldown_rate *data;
 	
-	if( *tick > 1 && sd && (data = HPMi->getFromMSD(sd,HPMi->pid,0)) ) {
+	if( *tick > 1 && sd && (data = getFromMSD(sd,0)) ) {
 		if( data->rate != 100 )
 			*tick = *tick * data->rate / 100;
 	}
@@ -51,10 +51,10 @@ int pc_bonus_preHook(struct map_session_data *sd,int *type,int *val) {
 	if( *type == bCoolDownRateID ) {
 		struct s_cooldown_rate *data;
 
-		if( !(data = HPMi->getFromMSD(sd,HPMi->pid,0)) ) {/* don't have, create */
+		if( !(data = getFromMSD(sd,0)) ) {/* don't have, create */
 			CREATE(data,struct s_cooldown_rate,1);/* alloc */
 			data->rate = 100;/* 100% -- default */
-			HPMi->addToMSD(sd,data,HPMi->pid,0,true);/* link to sd */
+			addToMSD(sd,data,0,true);/* link to sd */
 		}
 
 		data->rate += *val;
@@ -68,7 +68,7 @@ int pc_bonus_preHook(struct map_session_data *sd,int *type,int *val) {
 int status_calc_pc_preHook(struct map_session_data* sd, bool *first) {
 	struct s_cooldown_rate *data;
 	
-	if( (data = HPMi->getFromMSD(sd,HPMi->pid,0)) ) {
+	if( (data = getFromMSD(sd,0)) ) {
 		data->rate = 100;//100% -- default
 	}
 	
