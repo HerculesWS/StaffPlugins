@@ -53,7 +53,5 @@ HPExport void plugin_init (void) {
 	DB = GET_SYMBOL("DB");
 	clif = GET_SYMBOL("clif");
 
-	if( HPMi->addCommand != NULL ) {
-		HPMi->addCommand("debugcd",ACMD_A(debugcd));
-	}
+	addCommand("debugcd",debugcd);
 }
