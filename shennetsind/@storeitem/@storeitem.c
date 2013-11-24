@@ -111,5 +111,5 @@ HPExport void plugin_init (void) {
 	intif = GET_SYMBOL("intif");
 	pet = GET_SYMBOL("pet");
 
-	HPMi->addCommand("storeitem",ACMD_A(storeitem));
+	addCommand("storeitem",storeitem);
 }
