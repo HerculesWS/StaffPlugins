@@ -1,6 +1,6 @@
 Hercules Staff Plugins : @shennetsind Index
 ============
-####How to Install a Plugin: http://hercules.ws/wiki/HPM#Building_a_plugin (Building a Plugin)
+####How to Install a Plugin: [Building a Plugin](http://hercules.ws/wiki/HPM#Building_a_plugin)
 
 Table of Contents
 ---------
