@@ -5,3 +5,6 @@ Implements the @storeitem command, it creates and places items in a any online c
     @storeitem <item name or ID> <quantity> <refine> <char name>
 
 Designed by Beowulf/Nightroad
+
+============
+####How to Install a Plugin: [Building a Plugin](http://hercules.ws/wiki/HPM#Building_a_plugin)
