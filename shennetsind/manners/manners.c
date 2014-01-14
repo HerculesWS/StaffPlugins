@@ -26,7 +26,7 @@
 HPExport struct hplugin_info pinfo = {
 	"Manners",		// Plugin name
 	SERVER_TYPE_MAP,// Which server types this plugin works with?
-	"0.1",			// Plugin version
+	"0.2",			// Plugin version
 	HPM_VERSION,	// HPM Version (don't change, macro is automatically updated)
 };
 
@@ -43,13 +43,13 @@ bool clif_process_message_post(bool retVal, struct map_session_data *sd, int *fo
 	unsigned int i;
 	
 	/* don't bother! */
-	if( !retVal || !message || !badlistcount )
+	if( !retVal || !message )
 		return false;
 	
 	/**
 	 * Can this user skip?
 	 **/
-	if( pc_has_permission(sd,mouthful_mask) )
+	if( !badlistcount || pc_has_permission(sd,mouthful_mask) )
 		return true;
 	
 	/**
