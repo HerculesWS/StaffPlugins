@@ -17,6 +17,8 @@
 #include <time.h>
 #include <sys/stat.h>
 
+#include "../common/HPMDataCheck.h"
+
 #if !defined(LINE_LENGTH) || LINE_LENGTH < 72
 #define LINE_LENGTH 120
 #endif // LINE_LENGTH
