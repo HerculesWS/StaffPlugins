@@ -131,6 +131,8 @@ static int heap_update_node(struct node_heap *heap, struct path_node *node) {
 
 // Too large for the stack, and too slow to calloc/free.
 static struct path_node tp[MAX_WALKPATH_NAVI * MAX_WALKPATH_NAVI + 1];
+// Speed up (memsetting a smaller array, execution is over 5x faster)
+static int tpused[MAX_WALKPATH_NAVI * MAX_WALKPATH_NAVI + 1];
 
 // Append ID to the NPC data
 struct npc_data_append {
@@ -143,7 +145,7 @@ struct npc_data_append {
 static int add_path(struct node_heap *heap, int16 x, int16 y, int g_cost, struct path_node *parent, int h_cost) {
 	int i = calc_index(x, y);
 
-	if (tp[i].x == x && tp[i].y == y) { // We processed this node before
+	if (tpused[i] && tpused[i] == 1+(x<<16 | y)) { // We processed this node before
 		if (g_cost < tp[i].g_cost) { // New path to this node is better than old one
 			// Update costs and parent
 			tp[i].g_cost = g_cost;
@@ -160,7 +162,7 @@ static int add_path(struct node_heap *heap, int16 x, int16 y, int g_cost, struct
 		return 0;
 	}
 
-	if (tp[i].x || tp[i].y) // Index is already taken; see `tp` array FIXME for details
+	if (tpused[i]) // Index is already taken; see `tp` array FIXME for details
 		return 1;
 
 	// New node
@@ -170,6 +172,7 @@ static int add_path(struct node_heap *heap, int16 x, int16 y, int g_cost, struct
 	tp[i].parent = parent;
 	tp[i].f_cost = g_cost + h_cost;
 	tp[i].flag = SET_OPEN;
+	tpused[i] = 1+(x<<16 | y);
 	heap_push_node(heap, &tp[i]);
 	return 0;
 }
@@ -210,7 +213,7 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, int16 m, int16 x0, 
 		int xs = md->xs - 1;
 		int ys = md->ys - 1;
 		int len = 0;
-		memset(tp, 0, sizeof(tp)); // FIXME: This can be sped up.
+		memset(tpused, 0, sizeof(tpused));
 
 		// Start node
 		i = calc_index(x0, y0);
@@ -220,6 +223,7 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, int16 m, int16 x0, 
 		tp[i].g_cost = 0;
 		tp[i].f_cost = heuristic(x0, y0, x1, y1);
 		tp[i].flag   = SET_OPEN;
+		tpused[i] = 1+(x0<<16 | y0);
 
 		heap_push_node(&open_set, &tp[i]); // Put start node to 'open' set
 		for(;;) {

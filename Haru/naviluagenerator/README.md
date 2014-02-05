@@ -86,7 +86,7 @@ How to run it
 - Start your Map Server
 - Use the console command `server tools navigationlua` or the @command
   `@createnavigationlua` and wait some minutes (this depends on your server's
-  power - an i7-870 computer may need 5+ minutes of full CPU activity). Please
+  power - an i7-870 computer takes about a minute of full CPU activity). Please
   note that to all online players, the server will appear to be frozen during
   the whole process. Progress information will be displayed on the server
   console.
