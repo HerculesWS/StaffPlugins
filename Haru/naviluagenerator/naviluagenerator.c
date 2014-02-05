@@ -351,10 +351,10 @@ void atcommand_createnavigationlua_sub_mob(FILE *fp, int m, struct mob_db *mobin
 	fprintf(fp, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, map->list[m].name);     // Map gat
 	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, mob_global_idx);            // Global ID
 	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, mobinfo->mexp ? 301 : 300); // 300 = Normal, 301 = MVP
-#if CLIENTVER < 20140000
+#if CLIENTVER >= 20140000
 	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, (mobinfo->vd.class_<<16)|amount);
 	                                                                                   // Mob Class << 16 | Spawn amount
-#else /* CLIENTVER >= 20140000 */
+#else /* CLIENTVER < 20140000 */
 	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, mobinfo->vd.class_);        // Mob Class
 #endif /* CLIENTVER */
 	fprintf(fp, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, mobinfo->jname);        // Mob Name
