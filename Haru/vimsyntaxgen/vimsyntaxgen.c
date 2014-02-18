@@ -336,11 +336,17 @@ void vimsyntaxgen_scriptcmd(void) {
 }
 
 bool createdirectory(const char *dirname) {
-	struct stat st = { 0 };
+#ifdef WIN32
+	if (!CreateDirectory(dirname, NULL)) {
+		if (ERROR_ALREADY_EXISTS != GetLastError())
+			return false;
+	}
+#else /* Not WIN32 */	struct stat st = { 0 };
 	if (stat(dirname, &st) == -1 ) {
 		if (mkdir(dirname, 0755) != 0)
 			return false;
 	}
+#endif // WIN32 check
 	return true;
 }
 
