@@ -11,6 +11,8 @@
 #include "../map/mob.h"
 #include "../map/itemdb.h"
 
+#include "../common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
+
 /**
  * Adds a 50% ( customizeable ) chance for ETC (customizeable) items to drop from mobs with double quantity
  * Adds a 25% ( customizeable as well ) chance for it to use tripple quantity (this dice is only played if the 50% one succeeded)
