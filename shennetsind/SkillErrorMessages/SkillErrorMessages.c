@@ -12,6 +12,8 @@
 #include "../map/pc.h"
 #include "../map/map.h"
 
+#include "../common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
+
 HPExport struct hplugin_info pinfo = {
 	"SkillErrorMessages",		// Plugin name
 	SERVER_TYPE_MAP,// Which server types this plugin works with?

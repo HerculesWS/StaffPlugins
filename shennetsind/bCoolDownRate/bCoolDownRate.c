@@ -16,6 +16,8 @@
 #include "../map/script.h"
 #include "../map/status.h"
 
+#include "../common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
+
 /* works like bDelayRate */
 /* example: cooldown is 10000 (10s) */
 /* 'bonus bCoolDownRate,50;'  = 15000 (15s) (+50%) */

@@ -20,6 +20,8 @@
 #include "../map/status.h"
 #include "../map/unit.h"
 
+#include "../common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
+
 /**
  * Monsters HP is visible to all players, instead of only those who hit it.
  * Monsters spawned with 'boss' flag have a greater bar (2-3x normal size)

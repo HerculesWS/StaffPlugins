@@ -15,6 +15,8 @@
 #include "../map/pc.h"
 #include "../map/clif.h"
 
+#include "../common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
+
 /**
  * Reads off conf/manners.txt
  * - 1 Word per line

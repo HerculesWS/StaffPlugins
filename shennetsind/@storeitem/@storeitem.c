@@ -17,6 +17,7 @@
 #include "../map/pc.h"
 #include "../map/storage.h"
 
+#include "../common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
 /* Designed by Beowulf/Nightroad, HPM port by [Ind/Hercules] */
 
 HPExport struct hplugin_info pinfo = {
