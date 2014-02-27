@@ -124,6 +124,7 @@ void vimsyntaxgen_constdb(void) {
 	fprintf(local.fp, "\" Constants (imported from db/const.txt)\n");
 	vimsyntaxgen_set(SYNKEYWORDPREFIX"hConstant ", " ", "");
 	script->read_constdb();
+	script->hardcoded_constants();
 	vimsyntaxgen_flush(1);
 
 	/* Unlink */
