@@ -341,7 +341,8 @@ bool createdirectory(const char *dirname) {
 		if (ERROR_ALREADY_EXISTS != GetLastError())
 			return false;
 	}
-#else /* Not WIN32 */	struct stat st = { 0 };
+#else /* Not WIN32 */
+	struct stat st = { 0 };
 	if (stat(dirname, &st) == -1 ) {
 		if (mkdir(dirname, 0755) != 0)
 			return false;
