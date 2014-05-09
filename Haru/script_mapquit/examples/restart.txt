@@ -1,0 +1,32 @@
+//===== Hercules Script ======================================
+//= Example restartmapserver / quitmapserver script
+//===== By: ==================================================
+//= Haru
+//===== Current Version: =====================================
+//= 1.0
+//===== Description: =========================================
+//= Example script that defines the serverrestart and
+//  serverquit atcommands.
+//= This script is part of the script_mapquit plugin
+//  distribution, and requires said plugin to be loaded.
+//= This script requires the server (login, char, map) to be
+//  loaded through the provided run.sh script. See run.sh for
+//  its syntax.
+
+-	script	HerculesRestartQuit	-1,{
+	end;
+
+OnInit:
+	bindatcmd("maprestart", strnpcinfo(3) + "::OnCmdMapRestart", 99);
+	bindatcmd("mapquit", strnpcinfo(3) + "::OnCmdMapQuit", 99);
+	end;
+OnCmdMapRestart:
+	dispbottom "Hercules is restarting...";
+	mapquit(100);
+	end;
+
+OnCmdMapQuit:
+	dispbottom "Hercules is terminating...";
+	mapquit(101);
+	end;
+}

@@ -15,3 +15,7 @@ language, to be used with the vi/vim/gvim/MacVim text editor.
 
 Generates a set of `navi_*_krpri.lua` files to be used by the Navigation system
 present in recent kRO clients.
+
+### script_mapquit
+
+Script command to quit the mapserver, returning a chosen exit status to the OS.
