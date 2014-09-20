@@ -42,7 +42,7 @@ ACMD(debugcd) {
 	}
 
 	for( i = 0; i < cd->cursor; i++ ) {
-		sprintf(pout,"[%d] '%s' (ID %d) %d",i,skill->get_name(cd->nameid[i]),cd->nameid[i],cd->duration[i]);
+		sprintf(pout,"[%d] '%s' (ID %d) %d",i,skill->get_name(cd->entry[i]->skill_id),cd->entry[i]->skill_id,cd->entry[i]->total);
 		clif->message(fd,pout);
 	}
 	
@@ -55,5 +55,5 @@ HPExport void plugin_init (void) {
 	DB = GET_SYMBOL("DB");
 	clif = GET_SYMBOL("clif");
 
-	addCommand("debugcd",debugcd);
+	addAtcommand("debugcd",debugcd);
 }

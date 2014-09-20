@@ -1,6 +1,22 @@
-// Copyright (c) Hercules Dev Team, licensed under GNU GPL.
-// See the LICENSE file
-// Base author: Haru <haru@dotalux.com>
+/*
+ * Copyright (c) Hercules Dev Team
+ * Base author: Haru <haru@dotalux.com>
+ *
+ * This plugin is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This plugin is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this plugin.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/// Vim syntax highlighter generator
 
 #include "../common/cbasetypes.h"
 #include "../common/strlib.h"
@@ -534,7 +550,7 @@ void do_vimsyntaxgen(void) {
 		"    \"let makeprg = g:syntastic_"SYNTAXLANGUAGE"_compiler . ''\n"
 		"    let makeprg = self.makeprgBuild({\n"
 		"        \\ 'exe' : g:syntastic_"SYNTAXLANGUAGE"_compiler,\n"
-		"        \\ 'args' : '',\n"
+		"        \\ 'args' : g:syntastic_"SYNTAXLANGUAGE"_compiler_options,\n"
 		"        \\ 'filetype' : '"SYNTAXLANGUAGE"',\n"
 		"        \\ 'subchecker' : 'hercules' })\n"
 		"\n"
@@ -698,7 +714,7 @@ void do_vimsyntaxgen(void) {
 		"\" Allowed characters in a keyword\n"
 		"setlocal iskeyword=@,',_,a-z,A-Z,48-57\n"
 		"\n"
-		"syn match	hVariable	display \"\\<\\%%(\\|\\.\\|\\.@\\|@\\|\\$\\|'\\|##\\?\\)\\I\\i*$\\?\\>\"\n"
+		"syn match	hVariable	display \"\\<\\%%(\\.\\?\\.@\\?\\|\\$\\|'\\|##\\?\\)\\I\\i*\\$\\?\\>\"\n"
 		"\n"
 		"syn keyword	hKeyword	break continue\n"
 		"\" FIXME hKeyword function\n"
@@ -712,7 +728,7 @@ void do_vimsyntaxgen(void) {
 		"\n"
 		"\" String constants\n"
 		"\" Escaped double quotes\n"
-		"syn match	hStringSpecial	display contained \"\\\\\\\"\\|\\\\\\\\\"\n"
+		"syn match	hStringSpecial	display contained \"\\\\\\\"\\|\\\\[abtnvfr?]\\|\\\\x[0-9a-fA-F]\\{2\\}\\|\\\\[0-3][0-7]\\+\\|\\\\\\\\\"\n"
 		"\" Color constants\n"
 		"syn match	hColor		display contained \"\\^[0-9a-fA-F]\\{6\\}\"\n"
 		"\" Event names\n"
@@ -729,7 +745,6 @@ void do_vimsyntaxgen(void) {
 		"\"  endif\n"
 		"\"endif\n"
 		"\n"
-		"\" This should be before cErrInParen to avoid problems with #define ({ xxx })\n"
 		"if exists(\"c_curly_error\")\n"
 		"  syntax match hCurlyError	\"}\"\n"
 		"  syntax region hBlock		start=\"{\" end=\"}\" contains=ALLBUT,hCurlyError,@hParenGroup,hErrInParen,hErrInBracket,hString,@hTopLevel,@Spell fold\n"

@@ -1,7 +1,23 @@
-// Copyright (c) Hercules Dev Team, licensed under GNU GPL.
-// See the LICENSE file
-// Base author: Haru <haru@dotalux.com>
-// Adapted from an original version by Yommy
+/*
+ * Copyright (c) Hercules Dev Team
+ * Base author: Haru <haru@dotalux.com>
+ * Adapted from an original version by Yommy
+ *
+ * This plugin is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This plugin is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this plugin.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/// Navigation system LUA generator
 
 #include "../common/cbasetypes.h"
 #include "../common/strlib.h"
@@ -56,7 +72,7 @@
 #define DIRECTORYNAME "navigation"
 
 HPExport struct hplugin_info pinfo = {
-	"navuluagenerator",  // Plugin name
+	"naviluagenerator",  // Plugin name
 	SERVER_TYPE_MAP,     // Which server types this plugin works with?
 	"0.1",               // Plugin version
 	HPM_VERSION,         // HPM Version (don't change, macro is automatically updated)
@@ -149,7 +165,7 @@ static int add_path(struct node_heap *heap, int16 x, int16 y, int g_cost, struct
 		if (g_cost < tp[i].g_cost) { // New path to this node is better than old one
 			// Update costs and parent
 			tp[i].g_cost = g_cost;
-			tp[i].parent = parent; 
+			tp[i].parent = parent;
 			tp[i].f_cost = g_cost + h_cost;
 			if (tp[i].flag == SET_CLOSED) {
 				heap_push_node(heap, &tp[i]); // Put it in open set again
@@ -468,7 +484,7 @@ void writeheader(FILE *fp, const char *table_name) {
 		lt->tm_year+1900, lt->tm_mon+1, lt->tm_mday, table_name);
 }
 
-// Converts NPC warp data to unified s_warplog_warp structure. 
+// Converts NPC warp data to unified s_warplog_warp structure.
 // Note that src.map / dst.map variables have map_ids instead of mapindices.
 bool linkdata_convert(const struct s_map_npcdata *npcdata, int idx, bool inner, struct s_warplog_warp *out) {
 	if (!out)

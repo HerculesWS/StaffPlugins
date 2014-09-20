@@ -110,7 +110,7 @@ void load_manners(void) {
 			badlist[badlistcount - 1] = aStrdup(param);
 		}
 		
-		ShowStatus("Done reading '"CL_WHITE"%lu"CL_RESET"' entries in '"CL_WHITE"manners.txt"CL_RESET"'.\n", badlistcount);
+		ShowStatus("Done reading '"CL_WHITE"%u"CL_RESET"' entries in '"CL_WHITE"manners.txt"CL_RESET"'.\n", badlistcount);
 	} else {
 		ShowError("Failed to load 'conf/manners.txt'!\n");
 	}

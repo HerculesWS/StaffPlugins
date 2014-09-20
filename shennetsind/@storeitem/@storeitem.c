@@ -5,17 +5,18 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
 #include "../common/HPMi.h"
 #include "../map/atcommand.h"
 #include "../map/clif.h"
-#include "../map/itemdb.h"
 #include "../map/intif.h"
-#include "../map/status.h"
-#include "../map/unit.h"
-
-#include "../map/pet.h"
+#include "../map/itemdb.h"
+#include "../map/mob.h"
 #include "../map/pc.h"
+#include "../map/pet.h"
+#include "../map/status.h"
 #include "../map/storage.h"
+#include "../map/unit.h"
 
 #include "../common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
 /* Designed by Beowulf/Nightroad, HPM port by [Ind/Hercules] */
@@ -72,14 +73,14 @@ ACMD(storeitem) {
 	}
 	
 	if ((pl_sd = map->nick2sd(character)) != NULL) {
-		if (pc->get_group_level(sd) >= pc->get_group_level(pl_sd)) { // you can add items only to groups of equal or lower level
+		if (pc_get_group_level(sd) >= pc_get_group_level(pl_sd)) { // you can add items only to groups of equal or lower level
 			for (i = 0; i < number; i += get_count) {
 					if (pet_id >= 0) {
 						pl_sd->catch_target_class = pet->db[pet_id].class_;
 						intif->create_pet(pl_sd->status.account_id, pl_sd->status.char_id,
-																			 (short)pet->db[pet_id].class_, (short)mob->db(pet->db[pet_id].class_)->lv,
-																			 (short)pet->db[pet_id].EggID, 0, (short)pet->db[pet_id].intimate,
-																		100, 0, 1, pet->db[pet_id].jname);
+						                  (short)pet->db[pet_id].class_, (short)mob->db(pet->db[pet_id].class_)->lv,
+						                  (short)pet->db[pet_id].EggID, 0, (short)pet->db[pet_id].intimate,
+						                  100, 0, 1, pet->db[pet_id].jname);
 					} else {
 						memset(&item_tmp, 0, sizeof(item_tmp));
 						item_tmp.nameid = item_id;
@@ -112,5 +113,5 @@ HPExport void plugin_init (void) {
 	intif = GET_SYMBOL("intif");
 	pet = GET_SYMBOL("pet");
 
-	addCommand("storeitem",storeitem);
+	addAtcommand("storeitem",storeitem);
 }

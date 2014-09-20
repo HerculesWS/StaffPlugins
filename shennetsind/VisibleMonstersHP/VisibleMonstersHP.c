@@ -17,6 +17,7 @@
 #include "../map/pc.h"
 #include "../map/clif.h"
 #include "../map/mob.h"
+#include "../map/npc.h"
 #include "../map/status.h"
 #include "../map/unit.h"
 

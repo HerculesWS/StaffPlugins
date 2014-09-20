@@ -7,12 +7,15 @@
 #include <stdio.h>
 #include <string.h>
 #include "../common/HPMi.h"
-#include "../common/strlib.h"
 #include "../common/sql.h"
+#include "../common/strlib.h"
 #include "../common/timer.h"
-#include "../map/script.h"
-#include "../map/pc.h"
 #include "../map/map.h"
+#include "../map/npc.h"
+#include "../map/pc.h"
+#include "../map/script.h"
+
+#include "../common/HPMDataCheck.h"
 
 static char vendingstat_table[32] = "vending_stat";
 static uint32 vendingstat_refresh_sec = 120;
@@ -62,7 +65,7 @@ int map_vendingstat_npcshop_sub(struct npc_data *nd, va_list ap) {
 	return 1;
 }
 
-int map_vendingstat_tosql_timer(int tid, unsigned int tick, int id, intptr_t data) {
+int map_vendingstat_tosql_timer(int tid, int64 tick, int id, intptr_t data) {
 	struct s_mapiterator *iter;
 	struct map_session_data* sd;
 	int n=0;
@@ -119,7 +122,7 @@ int map_vendingstat_tosql_timer(int tid, unsigned int tick, int id, intptr_t dat
 	}
 	
 	// Now the NPC shops.
-	map->map_foreachnpc(map_vendingstat_npcshop_sub, buf, &n);
+	map->foreachnpc(map_vendingstat_npcshop_sub, buf, &n);
 	
 	// Clear table
 	if ( SQL_ERROR == SQL->Query(mysql_handle, "DELETE FROM `%s`", vendingstat_table) )
