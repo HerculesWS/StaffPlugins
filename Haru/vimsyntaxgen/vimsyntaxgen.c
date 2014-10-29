@@ -251,11 +251,11 @@ struct cmd_info cmd_hKeyword[] = {
 	CMD_PUSH("callsub"),
 };
 struct cmd_info cmd_hDeprecated[] = {
+	CMD_PUSH("petheal"),
+	CMD_PUSH("jump_zero"),
 	CMD_PUSH("menu"),
 	CMD_PUSH("goto"),
 	CMD_PUSH("set"),
-	CMD_PUSH("setr"),
-	CMD_PUSH("jump_zero"),
 };
 struct cmd_info cmd_hStatement[] = {
 	CMD_PUSH("mes"),
@@ -280,6 +280,8 @@ struct cmd_info cmd_hStatement[] = {
 bool vimsyntaxgen_script_add_builtin(const struct script_function *buildin, bool override) {
 	int i;
 	if (!buildin)
+		return false;
+	if (strncmp("__", buildin->name, 2) == 0) // Skip internal commands
 		return false;
 	for (i = 0; i < ARRAYLENGTH(cmd_hKeyword); i++) {
 		if (strcmp(cmd_hKeyword[i].name, buildin->name) != 0)
