@@ -72,7 +72,7 @@ Default is to use the Ragexe filenames. To change this, uncomment the line
 
 ### Version
 
-Startign with 2014 clients, there's a slight variation in the `navi_mob_krpri`
+Starting with 2014 clients, there's a slight variation in the `navi_mob_krpri`
 file, which now includes the mob spawn amount.
 
 Default is to use the format appropriate for your PACKETVER. If you want to

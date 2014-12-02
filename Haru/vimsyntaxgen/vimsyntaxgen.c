@@ -251,8 +251,16 @@ struct cmd_info cmd_hKeyword[] = {
 	CMD_PUSH("callsub"),
 };
 struct cmd_info cmd_hDeprecated[] = {
-	CMD_PUSH("petheal"),
-	CMD_PUSH("jump_zero"),
+	CMD_PUSH("setriding"),
+	CMD_PUSH("checkriding"),
+	CMD_PUSH("checkmadogear"),
+	CMD_PUSH("setmadogear"),
+	CMD_PUSH("save"),
+	CMD_PUSH("cmdothernpc"),
+	CMD_PUSH("enablearena"),
+	CMD_PUSH("disablearena"),
+	CMD_PUSH("setdragon"),
+	CMD_PUSH("checkdragon"),
 	CMD_PUSH("menu"),
 	CMD_PUSH("goto"),
 	CMD_PUSH("set"),
