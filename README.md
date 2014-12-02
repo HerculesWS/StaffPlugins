@@ -1,5 +1,21 @@
-Hercules Staff Plugins
-============
-###Plugins for the [Hercules Plugin Manager](http://hercules.ws/board/topic/549-introducing-hercules-plugin-manager/) maintained by the [Hercules Staff ](http://hercules.ws/board/)
+Hercules-contrib
+================
 
-How to Install a Plugin: [Building a Plugin](http://hercules.ws/wiki/HPM#Building_a_plugin)
+Welcome to Hercules-contrib. This repository contains a collection of
+user-contributed addons for [http://github.com/HerculesWS/Hercules](Hercules).
+
+Contents
+--------
+
+### Plugins
+
+User- (or staff-) contributed plugins.
+
+### Scripts
+
+User- (or staff-) contributed NPC scripts.
+
+### Devs
+
+Miscellaneous files maintained by the developers that don't belong to any of
+the above categories.
