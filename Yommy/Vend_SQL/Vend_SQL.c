@@ -45,10 +45,10 @@ int map_vendingstat_npcshop_sub(struct npc_data *nd, va_list ap) {
 		return 0;
 	
 	if ( nd->bl.m )
-		SQL->EscapeStringLen(mysql_handle, map_esc, map->list[nd->bl.m].name, strnlen(map->list[nd->bl.m].name,MAP_NAME_LENGTH));
+		SQL->EscapeStringLen(map->mysql_handle, map_esc, map->list[nd->bl.m].name, strnlen(map->list[nd->bl.m].name,MAP_NAME_LENGTH));
 	
 	sscanf(nd->name, "%23[^#]", name);
-	SQL->EscapeStringLen(mysql_handle, name_esc, name, strnlen(name,NAME_LENGTH));
+	SQL->EscapeStringLen(map->mysql_handle, name_esc, name, strnlen(name,NAME_LENGTH));
 	
 	
 	for ( i=0; i<nd->u.shop.count; i++ ) {
@@ -84,9 +84,9 @@ int map_vendingstat_tosql_timer(int tid, int64 tick, int id, intptr_t data) {
 		char shop_esc[MESSAGE_SIZE*2+1];
 		int i;
 		
-		SQL->EscapeStringLen(mysql_handle, map_esc, map->list[sd->bl.m].name, strnlen(map->list[sd->bl.m].name,MAP_NAME_LENGTH));
-		SQL->EscapeStringLen(mysql_handle, name_esc, sd->status.name, strnlen(sd->status.name,NAME_LENGTH));
-		SQL->EscapeStringLen(mysql_handle, shop_esc, sd->message, strnlen(sd->message,MESSAGE_SIZE));
+		SQL->EscapeStringLen(map->mysql_handle, map_esc, map->list[sd->bl.m].name, strnlen(map->list[sd->bl.m].name,MAP_NAME_LENGTH));
+		SQL->EscapeStringLen(map->mysql_handle, name_esc, sd->status.name, strnlen(sd->status.name,NAME_LENGTH));
+		SQL->EscapeStringLen(map->mysql_handle, shop_esc, sd->message, strnlen(sd->message,MESSAGE_SIZE));
 		
 		if ( sd->state.vending ) {
 			for ( i=0; i<sd->vend_num; i++ ) {
@@ -125,13 +125,13 @@ int map_vendingstat_tosql_timer(int tid, int64 tick, int id, intptr_t data) {
 	map->foreachnpc(map_vendingstat_npcshop_sub, buf, &n);
 	
 	// Clear table
-	if ( SQL_ERROR == SQL->Query(mysql_handle, "DELETE FROM `%s`", vendingstat_table) )
-		Sql_ShowDebug(mysql_handle);
+	if ( SQL_ERROR == SQL->Query(map->mysql_handle, "DELETE FROM `%s`", vendingstat_table) )
+		Sql_ShowDebug(map->mysql_handle);
 	
 	// Execute query
 	if ( n ) {
-		if ( SQL_ERROR == SQL->QueryStr(mysql_handle, StrBuf->Value(buf)) )
-			Sql_ShowDebug(mysql_handle);
+		if ( SQL_ERROR == SQL->QueryStr(map->mysql_handle, StrBuf->Value(buf)) )
+			Sql_ShowDebug(map->mysql_handle);
 	}
 	
 	mapit->free(iter);
@@ -145,7 +145,7 @@ void do_init_vendingstat()
 {
 	timer->add(timer->gettick()+vendingstat_refresh_sec*1000,map_vendingstat_tosql_timer,0,0);
 	
-	if ( SQL_ERROR == SQL->Query(mysql_handle, "CREATE TABLE IF NOT EXISTS `%s` ("
+	if ( SQL_ERROR == SQL->Query(map->mysql_handle, "CREATE TABLE IF NOT EXISTS `%s` ("
 								"`type` tinyint(3) unsigned NOT NULL,"
 								"`owner` varchar(23) NOT NULL,"
 								"`shop` varchar(79) NOT NULL,"
@@ -162,7 +162,7 @@ void do_init_vendingstat()
 								"`price` int(10) unsigned NOT NULL)",
 								vendingstat_table) )
 	{
-		Sql_ShowDebug(mysql_handle);
+		Sql_ShowDebug(map->mysql_handle);
 		ShowFatalError("Couldn't init SQL");
 	}
 }
