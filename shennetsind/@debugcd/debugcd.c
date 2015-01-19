@@ -25,17 +25,17 @@ ACMD(debugcd) {
 	struct skill_cd *cd;
 	char pout[99];
 	int i;
-	
+
 	if( !message || !*message ) {
 		clif->message(fd,"Usage: @debugcd <char_name>");
 		return false;
 	}
-	
+
 	if( !(pl_sd = map->nick2sd(message)) ) {
 		clif->message(fd,"Character name not found");
 		return false;
 	}
-	
+
 	if( !(cd = idb_get(skill->cd_db,pl_sd->status.char_id)) ) {
 		clif->message(fd,"Character has no saved cooldowns");
 		return false;
@@ -45,7 +45,7 @@ ACMD(debugcd) {
 		sprintf(pout,"[%d] '%s' (ID %d) %d",i,skill->get_name(cd->entry[i]->skill_id),cd->entry[i]->skill_id,cd->entry[i]->total);
 		clif->message(fd,pout);
 	}
-	
+
 	return true;
 }
 

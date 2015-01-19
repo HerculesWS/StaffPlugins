@@ -219,7 +219,7 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, int16 m, int16 x0, 
 		// A* (A-star) pathfinding
 		// We always use A* for finding walkpaths because it is what game client uses.
 		// Easy pathfinding cuts corners of non-walkable cells, but client always walks around it.
-		
+
 		BHEAP_STRUCT_VAR(node_heap, open_set); // 'Open' set
 
 		// FIXME: This array is too small to ensure all paths shorter than MAX_WALKPATH_NAVI

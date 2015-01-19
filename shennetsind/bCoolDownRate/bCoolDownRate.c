@@ -39,7 +39,7 @@ struct s_cooldown_rate {
 /* to check for the bonus */
 int skill_blockpc_start_preHook(struct map_session_data *sd, uint16 *skill_id, int *tick, bool *load) {
 	struct s_cooldown_rate *data;
-	
+
 	if( *tick > 1 && sd && (data = getFromMSD(sd,0)) ) {
 		if( data->rate != 100 )
 			*tick = *tick * data->rate / 100;
@@ -49,8 +49,7 @@ int skill_blockpc_start_preHook(struct map_session_data *sd, uint16 *skill_id, i
 
 /* to set the bonus */
 int pc_bonus_preHook(struct map_session_data *sd,int *type,int *val) {
-	
-	if( *type == bCoolDownRateID ) {
+	if (*type == bCoolDownRateID) {
 		struct s_cooldown_rate *data;
 
 		if( !(data = getFromMSD(sd,0)) ) {/* don't have, create */
@@ -58,22 +57,20 @@ int pc_bonus_preHook(struct map_session_data *sd,int *type,int *val) {
 			data->rate = 100;/* 100% -- default */
 			addToMSD(sd,data,0,true);/* link to sd */
 		}
-
 		data->rate += *val;
-		
+
 		hookStop();/* don't need to run the original */
 	}
-	
+
 	return 0;
 }
 /* to reset the bonus on recalc */
 int status_calc_pc_preHook(struct map_session_data* sd, bool *first) {
 	struct s_cooldown_rate *data;
-	
+
 	if( (data = getFromMSD(sd,0)) ) {
 		data->rate = 100;//100% -- default
 	}
-	
 	return 1;/* doesn't matter */
 }
 

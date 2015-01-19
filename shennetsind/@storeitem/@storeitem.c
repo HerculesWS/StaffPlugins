@@ -71,7 +71,7 @@ ACMD(storeitem) {
 	if (item_data->type == 4 || item_data->type == 5 || item_data->type == 7 || item_data->type == 8) {
 		get_count = 1;
 	}
-	
+
 	if ((pl_sd = map->nick2sd(character)) != NULL) {
 		if (pc_get_group_level(sd) >= pc_get_group_level(pl_sd)) { // you can add items only to groups of equal or lower level
 			for (i = 0; i < number; i += get_count) {
@@ -100,7 +100,7 @@ ACMD(storeitem) {
 		clif->message(fd, atcommand->msg_table[3]); // Character not found.
 		return false;
 	}
-	
+
 	return true;
 }
 HPExport void plugin_init (void) {

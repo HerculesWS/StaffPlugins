@@ -21,14 +21,14 @@ HPExport struct hplugin_info pinfo = {
 	HPM_VERSION,	// HPM Version (don't change, macro is automatically updated)
 };
 void (*clif_sk_fail_original) (struct map_session_data *sd,uint16 skill_id,enum useskill_fail_cause cause,int btype);
-void SKM_skill_fail(struct map_session_data *sd,uint16 skill_id,enum useskill_fail_cause cause,int btype) {	
+void SKM_skill_fail(struct map_session_data *sd,uint16 skill_id,enum useskill_fail_cause cause,int btype) {
 	if (!sd) {	//Since this is the most common nullpo....
 		ShowDebug("clif_skill_fail: Error, received NULL sd for skill %d\n", skill_id);
 		return;
 	}
-	
+
 	if (!sd->fd) return;
-	
+
 	switch( cause ) {
 		case USESKILL_FAIL_SPIRITS: {
 			char output[80];
@@ -41,7 +41,6 @@ void SKM_skill_fail(struct map_session_data *sd,uint16 skill_id,enum useskill_fa
 			break;
 	}
 }
-
 
 HPExport void plugin_init (void) {
 	clif = GET_SYMBOL("clif");

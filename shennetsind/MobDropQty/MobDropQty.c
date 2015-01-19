@@ -37,12 +37,9 @@ HPExport struct hplugin_info pinfo = {
  * Our pre-hook to mob->setdropitem
  **/
 struct item_drop *mob_setdropitem_pre(int *nameid, int *qty, struct item_data *data) {
-	
 	if( data ) {/* we only care about the areas that send it as non-NULL */
 		switch( data->type ) {
-			/**
-			 * uncomment those you wanna affect, don't even try adding gear or non-stackable types -- they are not meant to have qty higher than 1!
-			 **/
+			/* uncomment those you wanna affect, don't even try adding gear or non-stackable types -- they are not meant to have qty higher than 1! */
 			//case IT_HEALING:
 			//case IT_USABLE:
 			//case IT_CARD:
@@ -50,9 +47,7 @@ struct item_drop *mob_setdropitem_pre(int *nameid, int *qty, struct item_data *d
 			//case IT_DELAYCONSUME:
 			//case IT_CASH:
 			case IT_ETC:
-				/**
-				 * Feel free to modify the formula here!
-				 **/
+				/* Feel free to modify the formula here! */
 				if( rand()%100 > 50 ) /* if rand > 50, break and do not affect the qty */
 					break;
 				*qty += 1;//from 1 to 2
@@ -68,7 +63,7 @@ struct item_drop *mob_setdropitem_pre(int *nameid, int *qty, struct item_data *d
 				break;
 		}
 	}
-	
+
 	return NULL;/* return value on pre hooks doesn't matter unless we tell it not to run the original (with 'hookStop();') */
 }
 /**

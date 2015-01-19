@@ -282,7 +282,7 @@ static int clif_setlevel_sub(int lv) {
 	} else {
 		lv = battle->bc->max_lv;
 	}
-	
+
 	return lv;
 }
 /**
@@ -306,12 +306,12 @@ static int clif_setlevel(struct block_list* bl) {
  **/
 void VMHP_update( struct mob_data* md ) {
 	struct packet_monster_hp p;
-	
+
 	p.PacketType = monsterhpType;
 	p.GID = md->bl.id;
 	p.HP = md->status.hp;
 	p.MaxHP = md->status.max_hp;
-	
+
 	clif->send(&p,sizeof(p),&md->bl,AREA);
 }
 
@@ -321,7 +321,7 @@ void VMHP_update( struct mob_data* md ) {
 void mob_heal(struct mob_data *md,unsigned int heal) {
 	if (battle->bc->show_mob_info&3)
 		clif->charnameack (0, &md->bl);
-	
+
 #if PACKETVER >= 20120404
 	VMHP_update(md);
 #endif
@@ -352,17 +352,17 @@ void mob_damage(struct mob_data *md, struct block_list *src, int damage) {
 			mob->log_damage(md, src, damage);
 		md->dmgtick = timer->gettick();
 	}
-	
+
 	if (battle->bc->show_mob_info&3)
 		clif->charnameack (0, &md->bl);
-	
+
 	if (!src)
 		return;
-	
+
 #if PACKETVER >= 20120404
 	VMHP_update(md);
 #endif
-	
+
 	if( md->special_state.ai == 2 ) {//LOne WOlf explained that ANYONE can trigger the marine countdown skill. [Skotlex]
 		md->state.alchemist = 1;
 		mob->skill_use(md, timer->gettick(), MSC_ALCHEMIST);
@@ -378,16 +378,16 @@ void clif_set_unit_idle(struct block_list* bl, struct map_session_data *tsd, enu
 	struct view_data* vd = status->get_viewdata(bl);
 	struct packet_idle_unit_V p;
 	int g_id = status->get_guild_id(bl);
-		
+
 #if PACKETVER < 20091103
 	if( !pc->db_checkid(vd->class_) ) {
 		clif->set_unit_idle2(bl,tsd,target);
 		return;
 	}
 #endif
-	
+
 	sd = BL_CAST(BL_PC, bl);
-	
+
 	p.PacketType = 0x915;
 #if PACKETVER >= 20091103
 	p.PacketLength = sizeof(p);
@@ -442,9 +442,9 @@ void clif_set_unit_idle(struct block_list* bl, struct map_session_data *tsd, enu
 		p.isBoss = 0;
 	}
 #endif
-	
+
 	clif->send(&p,sizeof(p),tsd?&tsd->bl:bl,target);
-	
+
 	if( disguised(bl) ) {
 #if PACKETVER >= 20091103
 		p.objecttype = pc->db_checkid(status->get_viewdata(bl)->class_) ? 0x0 : 0x5;
@@ -454,7 +454,6 @@ void clif_set_unit_idle(struct block_list* bl, struct map_session_data *tsd, enu
 #endif
 		clif->send(&p,sizeof(p),bl,SELF);
 	}
-	
 }
 /**
  * clif->spawn_unit overload
@@ -465,16 +464,16 @@ void clif_spawn_unit(struct block_list* bl, enum send_target target) {
 	struct view_data* vd = status->get_viewdata(bl);
 	struct packet_spawn_unit_V p;
 	int g_id = status->get_guild_id(bl);
-		
+
 #if PACKETVER < 20091103
 	if( !pc->db_checkid(vd->class_) ) {
 		clif->spawn_unit2(bl,target);
 		return;
 	}
 #endif
-	
+
 	sd = BL_CAST(BL_PC, bl);
-	
+
 	p.PacketType = 0x90f;
 #if PACKETVER >= 20091103
 	p.PacketLength = sizeof(p);
@@ -540,7 +539,6 @@ void clif_spawn_unit(struct block_list* bl, enum send_target target) {
 		clif->send(&p,sizeof(p),bl,SELF);
 	} else
 		clif->send(&p,sizeof(p),bl,target);
-	
 }
 /**
  * clif->set_unit_walking overload
@@ -551,9 +549,9 @@ void clif_set_unit_walking(struct block_list* bl, struct map_session_data *tsd, 
 	struct view_data* vd = status->get_viewdata(bl);
 	struct packet_unit_walking_V p;
 	int g_id = status->get_guild_id(bl);
-		
+
 	sd = BL_CAST(BL_PC, bl);
-	
+
 	p.PacketType = 0x914;
 #if PACKETVER >= 20091103
 	p.PacketLength = sizeof(p);
@@ -605,9 +603,9 @@ void clif_set_unit_walking(struct block_list* bl, struct map_session_data *tsd, 
 		p.isBoss = 0;
 	}
 #endif
-	
+
 	clif->send(&p,sizeof(p),tsd?&tsd->bl:bl,target);
-	
+
 	if( disguised(bl) ) {
 #if PACKETVER >= 20091103
 		p.objecttype = pc->db_checkid(status->get_viewdata(bl)->class_) ? 0x0 : 0x5;
@@ -634,11 +632,11 @@ HPExport void plugin_init (void) {
 	pc = GET_SYMBOL("pc");
 	status = GET_SYMBOL("status");
 	unit = GET_SYMBOL("unit");
-	
+
 	clif->set_unit_walking = clif_set_unit_walking;
 	clif->set_unit_idle = clif_set_unit_idle;
 	clif->spawn_unit = clif_spawn_unit;
-	
+
 	mob->damage = mob_damage;
 	mob->heal = mob_heal;
 }
