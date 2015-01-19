@@ -87,6 +87,11 @@ struct walkpath_data_navi {
 };
 
 /* begin 1:1 copy of various definitions and static functions from path.c */
+
+/// @name Structures and defines for A* pathfinding
+/// @{
+
+/// Path node
 struct path_node {
 	struct path_node *parent; ///< pointer to parent (for path reconstruction)
 	short x; ///< X-coordinate
@@ -99,12 +104,6 @@ struct path_node {
 /// Binary heap of path nodes
 BHEAP_STRUCT_DECL(node_heap, struct path_node*);
 
-// Translates dx,dy into walking direction
-static const unsigned char walk_choices [3][3] = {
-	{1,0,7},
-	{2,-1,6},
-	{3,4,5},
-};
 /// Comparator for binary heap of path nodes (minimum cost at top)
 #define NODE_MINTOPCMP(i,j) ((i)->f_cost - (j)->f_cost)
 
@@ -112,7 +111,16 @@ static const unsigned char walk_choices [3][3] = {
 
 /// Estimates the cost from (x0,y0) to (x1,y1).
 /// This is inadmissible (overestimating) heuristic used by game client.
-#define heuristic(x0, y0, x1, y1)	(MOVE_COST * (abs((x1) - (x0)) + abs((y1) - (y0)))) // Manhattan distance
+#define heuristic(x0, y0, x1, y1) (MOVE_COST * (abs((x1) - (x0)) + abs((y1) - (y0)))) // Manhattan distance
+/// @}
+
+// Translates dx,dy into walking direction
+static const unsigned char walk_choices [3][3] = {
+	{1,0,7},
+	{2,-1,6},
+	{3,4,5},
+};
+
 
 #define SET_OPEN 0
 #define SET_CLOSED 1
@@ -122,25 +130,29 @@ static const unsigned char walk_choices [3][3] = {
 #define DIR_SOUTH 4
 #define DIR_EAST 8
 
+/// @name A* pathfinding related functions
+/// @{
+
 /// Pushes path_node to the binary node_heap.
 /// Ensures there is enough space in array to store new element.
-static void heap_push_node(struct node_heap *heap, struct path_node *node) {
+static void heap_push_node(struct node_heap *heap, struct path_node *node)
+{
 #ifndef __clang_analyzer__ // TODO: Figure out why clang's static analyzer doesn't like this
 	BHEAP_ENSURE(*heap, 1, 256);
-	BHEAP_PUSH(*heap, node, NODE_MINTOPCMP, swap_ptr);
+	BHEAP_PUSH2(*heap, node, NODE_MINTOPCMP, swap_ptr);
 #endif // __clang_analyzer__
 }
 
 /// Updates path_node in the binary node_heap.
-static int heap_update_node(struct node_heap *heap, struct path_node *node) {
+static int heap_update_node(struct node_heap *heap, struct path_node *node)
+{
 	int i;
 	ARR_FIND(0, BHEAP_LENGTH(*heap), i, BHEAP_DATA(*heap)[i] == node);
 	if (i == BHEAP_LENGTH(*heap)) {
 		ShowError("heap_update_node: node not found\n");
 		return 1;
 	}
-	BHEAP_POPINDEX(*heap, i, NODE_MINTOPCMP, swap_ptr);
-	BHEAP_PUSH(*heap, node, NODE_MINTOPCMP, swap_ptr);
+	BHEAP_UPDATE(*heap, i, NODE_MINTOPCMP, swap_ptr);
 	return 0;
 }
 /* end 1:1 copy of various definitions and static functions from path.c */
@@ -158,7 +170,8 @@ struct npc_data_append {
 // Modified copy to better handle static *tp
 /// Path_node processing in A* pathfinding.
 /// Adds new node to heap and updates/re-adds old ones if necessary.
-static int add_path(struct node_heap *heap, int16 x, int16 y, int g_cost, struct path_node *parent, int h_cost) {
+static int add_path(struct node_heap *heap, int16 x, int16 y, int g_cost, struct path_node *parent, int h_cost)
+{
 	int i = calc_index(x, y);
 
 	if (tpused[i] && tpused[i] == 1+(x<<16 | y)) { // We processed this node before
@@ -195,7 +208,14 @@ static int add_path(struct node_heap *heap, int16 x, int16 y, int g_cost, struct
 ///@}
 
 // Modification of path_search to better handle static *tp
-static bool path_search_navi(struct walkpath_data_navi *wpd, int16 m, int16 x0, int16 y0, int16 x1, int16 y1, cell_chk cell) {
+/*==========================================
+ * path search (x0,y0)->(x1,y1)
+ * wpd: path info will be written here
+ * flag: &1 = easy path search only
+ * cell: type of obstruction to check for
+ *------------------------------------------*/
+static bool path_search_navi(struct walkpath_data_navi *wpd, int16 m, int16 x0, int16 y0, int16 x1, int16 y1, cell_chk cell)
+{
 	register int i, j, x, y, dx, dy;
 	struct map_data *md;
 	struct walkpath_data_navi s_wpd;
@@ -214,6 +234,12 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, int16 m, int16 x0, 
 	// Check destination cell
 	if (x1 < 0 || x1 >= md->xs || y1 < 0 || y1 >= md->ys || md->getcellp(md,x1,y1,cell))
 		return false;
+
+	if( x0 == x1 && y0 == y1 ) {
+		wpd->path_len = 0;
+		wpd->path_pos = 0;
+		return true;
+	}
 
 	{ // !(flag&1)
 		// A* (A-star) pathfinding
@@ -242,6 +268,7 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, int16 m, int16 x0, 
 		tpused[i] = 1+(x0<<16 | y0);
 
 		heap_push_node(&open_set, &tp[i]); // Put start node to 'open' set
+
 		for(;;) {
 			int e = 0; // error flag
 
@@ -261,7 +288,7 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, int16 m, int16 x0, 
 			}
 
 			current = BHEAP_PEEK(open_set); // Look for the lowest f_cost node in the 'open' set
-			BHEAP_POP(open_set, NODE_MINTOPCMP, swap_ptr); // Remove it from 'open' set
+			BHEAP_POP2(open_set, NODE_MINTOPCMP, swap_ptr); // Remove it from 'open' set
 
 			x      = current->x;
 			y      = current->y;
@@ -281,24 +308,22 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, int16 m, int16 x0, 
 
 #define chk_dir(d) ((allowed_dirs & (d)) == (d))
 			// Process neighbors of current node
-			// TODO: Processing order affects chosen path if there is more than one path with same cost.
-			// In few cases path found by server will be different than path found by game client.
-			if (chk_dir(DIR_SOUTH))
-				e += add_path(&open_set, x, y-1, g_cost + MOVE_COST, current, heuristic(x, y-1, x1, y1)); // (x, y-1) 4
-			if (chk_dir(DIR_SOUTH|DIR_WEST) && !md->getcellp(md, x-1, y-1, cell))
-				e += add_path(&open_set, x-1, y-1, g_cost + MOVE_DIAGONAL_COST, current, heuristic(x-1, y-1, x1, y1)); // (x-1, y-1) 3
-			if (chk_dir(DIR_WEST))
-				e += add_path(&open_set, x-1, y, g_cost + MOVE_COST, current, heuristic(x-1, y, x1, y1)); // (x-1, y) 2
-			if (chk_dir(DIR_NORTH|DIR_WEST) && !md->getcellp(md, x-1, y+1, cell))
-				e += add_path(&open_set, x-1, y+1, g_cost + MOVE_DIAGONAL_COST, current, heuristic(x-1, y+1, x1, y1)); // (x-1, y+1) 1
-			if (chk_dir(DIR_NORTH))
-				e += add_path(&open_set, x, y+1, g_cost + MOVE_COST, current, heuristic(x, y+1, x1, y1)); // (x, y+1) 0
-			if (chk_dir(DIR_NORTH|DIR_EAST) && !md->getcellp(md, x+1, y+1, cell))
-				e += add_path(&open_set, x+1, y+1, g_cost + MOVE_DIAGONAL_COST, current, heuristic(x+1, y+1, x1, y1)); // (x+1, y+1) 7
-			if (chk_dir(DIR_EAST))
-				e += add_path(&open_set, x+1, y, g_cost + MOVE_COST, current, heuristic(x+1, y, x1, y1)); // (x+1, y) 6
 			if (chk_dir(DIR_SOUTH|DIR_EAST) && !md->getcellp(md, x+1, y-1, cell))
 				e += add_path(&open_set, x+1, y-1, g_cost + MOVE_DIAGONAL_COST, current, heuristic(x+1, y-1, x1, y1)); // (x+1, y-1) 5
+			if (chk_dir(DIR_EAST))
+				e += add_path(&open_set, x+1, y, g_cost + MOVE_COST, current, heuristic(x+1, y, x1, y1)); // (x+1, y) 6
+			if (chk_dir(DIR_NORTH|DIR_EAST) && !md->getcellp(md, x+1, y+1, cell))
+				e += add_path(&open_set, x+1, y+1, g_cost + MOVE_DIAGONAL_COST, current, heuristic(x+1, y+1, x1, y1)); // (x+1, y+1) 7
+			if (chk_dir(DIR_NORTH))
+				e += add_path(&open_set, x, y+1, g_cost + MOVE_COST, current, heuristic(x, y+1, x1, y1)); // (x, y+1) 0
+			if (chk_dir(DIR_NORTH|DIR_WEST) && !md->getcellp(md, x-1, y+1, cell))
+				e += add_path(&open_set, x-1, y+1, g_cost + MOVE_DIAGONAL_COST, current, heuristic(x-1, y+1, x1, y1)); // (x-1, y+1) 1
+			if (chk_dir(DIR_WEST))
+				e += add_path(&open_set, x-1, y, g_cost + MOVE_COST, current, heuristic(x-1, y, x1, y1)); // (x-1, y) 2
+			if (chk_dir(DIR_SOUTH|DIR_WEST) && !md->getcellp(md, x-1, y-1, cell))
+				e += add_path(&open_set, x-1, y-1, g_cost + MOVE_DIAGONAL_COST, current, heuristic(x-1, y-1, x1, y1)); // (x-1, y-1) 3
+			if (chk_dir(DIR_SOUTH))
+				e += add_path(&open_set, x, y-1, g_cost + MOVE_COST, current, heuristic(x, y-1, x1, y1)); // (x, y-1) 4
 #undef chk_dir
 			if (e) {
 				BHEAP_CLEAR(open_set);
@@ -747,10 +772,10 @@ bool atcommand_createnavigationlua_sub(void) {
 
 void do_navigationlua(struct map_session_data *sd) {
 	if ( !atcommand_createnavigationlua_sub() ) {
-		ShowError("Failed to create navigation LUA files");
+		ShowError("Failed to create navigation LUA files\n");
 		if ( sd ) clif->message(sd->fd, "Failed to create navigation LUA files");
 	} else {
-		ShowStatus("File has been generated.");
+		ShowStatus("File has been generated.\n");
 		if ( sd ) clif->message(sd->fd, "File has been generated.");
 	}
 }
