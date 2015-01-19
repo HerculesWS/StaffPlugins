@@ -154,7 +154,7 @@ void vimsyntaxgen_mapdb(void) {
 	int index;
 	char map_name[12];
 	char *mapindex_cfgfile = "db/map_index.txt";
-	
+
 	fprintf(local.fp, "\" Maps (imported from db/map_index.txt)\n");
 	vimsyntaxgen_set(SYNMATCHPREFIX"hMapName contained display \"\\%(", "\\|", "\\)\"");
 	if( ( mfp = fopen(mapindex_cfgfile,"r") ) == NULL ){
@@ -706,7 +706,7 @@ void do_vimsyntaxgen(void) {
 	if ((local.fp = fopen(DIRECTORYNAME PATHSEP_STR "syntax" PATHSEP_STR SYNTAXLANGUAGE".vim", "wt+")) == NULL) {
 		ShowError("do_vimsyntaxgen: Unable to open syntax output file\n");
 		return;
- 	}
+	}
 
 	writeheader("Vim syntax file");
 
@@ -1017,8 +1017,10 @@ void do_vimsyntaxgen(void) {
 CPCMD(vimsyntaxgen) {
 	do_vimsyntaxgen();
 }
-void vimsyntaxgen_arg(char *param) {
+CMDLINEARG(vimsyntaxgen)
+{
 	map->minimal = torun = true;
+	return true;
 }
 HPExport void server_preinit(void) {
 	map = GET_SYMBOL("map");
@@ -1027,8 +1029,8 @@ HPExport void server_preinit(void) {
 	mob = GET_SYMBOL("mob");
 	itemdb = GET_SYMBOL("itemdb");
 	strlib = GET_SYMBOL("strlib");
-	
-	addArg("--vimsyntaxgen", false, vimsyntaxgen_arg, NULL);
+
+	addArg("--vimsyntaxgen", false, vimsyntaxgen, NULL);
 }
 HPExport void plugin_init(void) {
 	addCPCommand("server:tools:vimsyntaxgen", vimsyntaxgen);
