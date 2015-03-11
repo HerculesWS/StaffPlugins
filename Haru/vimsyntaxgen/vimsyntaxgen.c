@@ -19,6 +19,7 @@
 /// Vim syntax highlighter generator
 
 #include "../common/cbasetypes.h"
+#include "../common/malloc.h"
 #include "../common/strlib.h"
 #include "../common/HPMi.h"
 #include "../map/map.h"
@@ -100,7 +101,7 @@ void vimsyntaxgen_append(const char *str) {
 
 /// To override script_set_constant, called by script_read_constdb
 void vimsyntaxgen_script_set_constant(const char* name, int value, bool isparameter) {
-	static char lastprefix[256] = { 0 };
+	static char lastprefix[7] = { 0 };
 	static size_t lastlen = 0;
 	static bool lastwasparameter = false;
 	char *underscore = NULL;
@@ -111,7 +112,7 @@ void vimsyntaxgen_script_set_constant(const char* name, int value, bool isparame
 			len = 0;
 		else
 			len = underscore-name;
-		if (len > 6 || len > sizeof(lastprefix) - 1 || atoi(name) != 0)
+		if (len > sizeof(lastprefix) - 1 || atoi(name) != 0)
 			len = 0;
 		if (len != lastlen || strncmp(lastprefix, name, len) != 0) {
 			vimsyntaxgen_flush(0);
@@ -152,7 +153,7 @@ void vimsyntaxgen_mapdb(void) {
 	FILE *mfp;
 	char line[1024];
 	int index;
-	char map_name[12];
+	char map_name[MAP_NAME_LENGTH];
 	char *mapindex_cfgfile = "db/map_index.txt";
 
 	fprintf(local.fp, "\" Maps (imported from db/map_index.txt)\n");
@@ -165,7 +166,7 @@ void vimsyntaxgen_mapdb(void) {
 		if(line[0] == '/' && line[1] == '/')
 			continue;
 
-		switch (sscanf(line, "%12s\t%d", map_name, &index)) {
+		switch (sscanf(line, "%11s\t%d", map_name, &index)) {
 			case 1:
 			case 2:
 				vimsyntaxgen_append(map_name);
@@ -194,12 +195,11 @@ void vimsyntaxgen_skilldb(void) {
 
 void vimsyntaxgen_mobdb(void) {
 	int i;
-	struct mob_db *md = NULL;
 
 	fprintf(local.fp, "\" Mobs (imported from db/*/mob_db.txt)\n");
 	vimsyntaxgen_set(SYNKEYWORDPREFIX"hMobId ", " ", "");
 	for (i = 0; i < MAX_MOB_DB; i++) {
-		md = mob->db(i);
+		struct mob_db *md = mob->db(i);
 		if (md == mob->dummy || !md->sprite[0])
 			continue;
 		vimsyntaxgen_append(md->sprite);
@@ -223,12 +223,11 @@ struct item_data* vimsyntaxgen_itemdb_search(int nameid) {
 
 void vimsyntaxgen_itemdb(void) {
 	int i;
-	struct item_data *id = NULL;
 
 	fprintf(local.fp, "\" Items (imported from db/*/item_db.conf)\n");
 	vimsyntaxgen_set(SYNKEYWORDPREFIX"hItemId ", " ", "");
 	for (i = 0; i < ARRAYLENGTH(itemdb->array); i++) {
-		id = vimsyntaxgen_itemdb_search(i);
+		struct item_data *id = vimsyntaxgen_itemdb_search(i);
 		if (!id || !id->name[0])
 			continue;
 		vimsyntaxgen_append(id->name);
@@ -251,16 +250,6 @@ struct cmd_info cmd_hKeyword[] = {
 	CMD_PUSH("callsub"),
 };
 struct cmd_info cmd_hDeprecated[] = {
-	CMD_PUSH("setriding"),
-	CMD_PUSH("checkriding"),
-	CMD_PUSH("checkmadogear"),
-	CMD_PUSH("setmadogear"),
-	CMD_PUSH("save"),
-	CMD_PUSH("cmdothernpc"),
-	CMD_PUSH("enablearena"),
-	CMD_PUSH("disablearena"),
-	CMD_PUSH("setdragon"),
-	CMD_PUSH("checkdragon"),
 	CMD_PUSH("menu"),
 	CMD_PUSH("goto"),
 	CMD_PUSH("set"),
@@ -283,6 +272,8 @@ struct cmd_info cmd_hStatement[] = {
 	CMD_PUSH("sleep2"),
 	CMD_PUSH("awake"),
 };
+struct cmd_info *cmd_hDeprecatedExtra = NULL;
+int cmd_hDeprecatedExtra_count = 0;
 #undef CMD_PUSH
 
 bool vimsyntaxgen_script_add_builtin(const struct script_function *buildin, bool override) {
@@ -291,6 +282,12 @@ bool vimsyntaxgen_script_add_builtin(const struct script_function *buildin, bool
 		return false;
 	if (strncmp("__", buildin->name, 2) == 0) // Skip internal commands
 		return false;
+	if (buildin->deprecated) {
+		RECREATE(cmd_hDeprecatedExtra, struct cmd_info, ++cmd_hDeprecatedExtra_count);
+		cmd_hDeprecatedExtra[cmd_hDeprecatedExtra_count-1].name = aStrdup(buildin->name);
+		cmd_hDeprecatedExtra[cmd_hDeprecatedExtra_count-1].found = true;
+		return false;
+	}
 	for (i = 0; i < ARRAYLENGTH(cmd_hKeyword); i++) {
 		if (strcmp(cmd_hKeyword[i].name, buildin->name) != 0)
 			continue;
@@ -345,6 +342,15 @@ void vimsyntaxgen_scriptcmd(void) {
 			continue;
 		}
 		vimsyntaxgen_append(cmd_hDeprecated[i].name);
+	}
+	if (cmd_hDeprecatedExtra) {
+		for (i = 0; i < cmd_hDeprecatedExtra_count; i++) {
+			vimsyntaxgen_append(cmd_hDeprecatedExtra[i].name);
+			aFree(cmd_hDeprecatedExtra[i].name);
+			cmd_hDeprecatedExtra[i].name = NULL;
+		}
+		aFree(cmd_hDeprecatedExtra);
+		cmd_hDeprecatedExtra = NULL;
 	}
 	vimsyntaxgen_flush(0);
 
@@ -1029,6 +1035,7 @@ HPExport void server_preinit(void) {
 	mob = GET_SYMBOL("mob");
 	itemdb = GET_SYMBOL("itemdb");
 	strlib = GET_SYMBOL("strlib");
+	iMalloc = GET_SYMBOL("iMalloc");
 
 	addArg("--vimsyntaxgen", false, vimsyntaxgen, NULL);
 }

@@ -400,7 +400,7 @@ void atcommand_createnavigationlua_sub_mob(FILE *fp, int m, struct mob_db *mobin
 	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, (amount<<16)|mobinfo->vd.class_);
 	                                                                                   // Spawn amount << 16 | Mob class
 #else /* CLIENTVER < 20140000 */
-	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, mobinfo->vd.class_);        // Mob Class
+	fprintf(fp, OUT_INDENT OUT_INDENT "%u," OUT_SEPARATOR, mobinfo->vd.class_);        // Mob Class
 #endif /* CLIENTVER */
 	fprintf(fp, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, mobinfo->jname);        // Mob Name
 	fprintf(fp, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, mobinfo->sprite);       // Sprite Name
@@ -570,7 +570,13 @@ bool atcommand_createnavigationlua_sub(void) {
 	fp_npcdist = fopen(DIRECTORYNAME PATHSEP_STR "navi_npcdistance_" NAMESUFFIX ".lua", "wt+");
 	fp_linkdist = fopen(DIRECTORYNAME PATHSEP_STR "navi_linkdistance_" NAMESUFFIX ".lua", "wt+");
 
-	if( !fp_mob || !fp_map || !fp_link || !fp_npc || !fp_npcdist || !fp_linkdist ) {
+	if (!fp_mob || !fp_map || !fp_link || !fp_npc || !fp_npcdist || !fp_linkdist) {
+		if (fp_mob) fclose(fp_mob);
+		if (fp_map) fclose(fp_map);
+		if (fp_link) fclose(fp_link);
+		if (fp_npc) fclose(fp_npc);
+		if (fp_npcdist) fclose(fp_npcdist);
+		if (fp_linkdist) fclose(fp_linkdist);
 		ShowError("do_navigationlua: Unable to open output file.\n");
 		return false;
 	}

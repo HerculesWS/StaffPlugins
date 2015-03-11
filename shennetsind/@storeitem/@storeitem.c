@@ -34,7 +34,7 @@ ACMD(storeitem) {
 	char item_name[ITEM_NAME_LENGTH];
 	char character[NAME_LENGTH];
 	int number = 0, item_id;
-	int get_count, i, pet_id, ref = 0;
+	int get_count, pet_id, ref = 0;
 
 	memset(item_name, '\0', sizeof(item_name));
 
@@ -74,6 +74,7 @@ ACMD(storeitem) {
 
 	if ((pl_sd = map->nick2sd(character)) != NULL) {
 		if (pc_get_group_level(sd) >= pc_get_group_level(pl_sd)) { // you can add items only to groups of equal or lower level
+			int i;
 			for (i = 0; i < number; i += get_count) {
 					if (pet_id >= 0) {
 						pl_sd->catch_target_class = pet->db[pet_id].class_;
