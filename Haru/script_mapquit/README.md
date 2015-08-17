@@ -5,6 +5,11 @@ by @MishimaHaruna (Haru)
 
 * * *
 
+**Note**: This plugin has been moved to the main repository. The sample scripts
+are still here for reference.
+
+* * *
+
 Script command to quit the mapserver, returning a chosen exit status to the OS.
 
 Purpose

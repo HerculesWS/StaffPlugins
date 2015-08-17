@@ -19,3 +19,4 @@ present in recent kRO clients.
 ### script_mapquit
 
 Script command to quit the mapserver, returning a chosen exit status to the OS.
+(this plugin was moved to the Hercules repository - only sample scripts are still here)
