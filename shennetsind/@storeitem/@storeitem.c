@@ -2,23 +2,24 @@
 // See the LICENSE file
 // Sample Hercules Plugin
 
+#include "common/hercules.h"
+#include "map/atcommand.h"
+#include "map/clif.h"
+#include "map/intif.h"
+#include "map/itemdb.h"
+#include "map/mob.h"
+#include "map/pc.h"
+#include "map/pet.h"
+#include "map/status.h"
+#include "map/storage.h"
+#include "map/unit.h"
+
+#include "common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include "../common/HPMi.h"
-#include "../map/atcommand.h"
-#include "../map/clif.h"
-#include "../map/intif.h"
-#include "../map/itemdb.h"
-#include "../map/mob.h"
-#include "../map/pc.h"
-#include "../map/pet.h"
-#include "../map/status.h"
-#include "../map/storage.h"
-#include "../map/unit.h"
-
-#include "../common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
 /* Designed by Beowulf/Nightroad, HPM port by [Ind/Hercules] */
 
 HPExport struct hplugin_info pinfo = {
@@ -57,7 +58,7 @@ ACMD(storeitem) {
 	if ((item_data = itemdb->search_name(item_name)) != NULL || (item_data = itemdb->exists(atoi(item_name))) != NULL)
 			item_id = item_data->nameid;
 	else {
-		clif->message(fd, atcommand->msg_table[19]); // Invalid item ID or name.
+		clif->message(fd, msg_fd(fd, 19)); // Invalid item ID or name.
 		return false;
 	}
 
@@ -79,8 +80,8 @@ ACMD(storeitem) {
 					if (pet_id >= 0) {
 						pl_sd->catch_target_class = pet->db[pet_id].class_;
 						intif->create_pet(pl_sd->status.account_id, pl_sd->status.char_id,
-						                  (short)pet->db[pet_id].class_, (short)mob->db(pet->db[pet_id].class_)->lv,
-						                  (short)pet->db[pet_id].EggID, 0, (short)pet->db[pet_id].intimate,
+						                  pet->db[pet_id].class_, mob->db(pet->db[pet_id].class_)->lv,
+						                  pet->db[pet_id].EggID, 0, pet->db[pet_id].intimate,
 						                  100, 0, 1, pet->db[pet_id].jname);
 					} else {
 						memset(&item_tmp, 0, sizeof(item_tmp));
@@ -92,27 +93,18 @@ ACMD(storeitem) {
 						storage->close(pl_sd);
 					}
 				}
-			clif->message(fd, atcommand->msg_table[18]); // Item created.
+			clif->message(fd, msg_fd(fd, 18)); // Item created.
 		} else {
-			clif->message(fd, atcommand->msg_table[81]); // Your GM level don't authorise you to do this action on this player.
+			clif->message(fd, msg_fd(fd, 81)); // Your GM level don't authorise you to do this action on this player.
 			return false;
 		}
 	} else {
-		clif->message(fd, atcommand->msg_table[3]); // Character not found.
+		clif->message(fd, msg_fd(fd, 3)); // Character not found.
 		return false;
 	}
 
 	return true;
 }
 HPExport void plugin_init (void) {
-	atcommand = GET_SYMBOL("atcommand");
-	storage = GET_SYMBOL("storage");
-	clif = GET_SYMBOL("clif");
-	pc = GET_SYMBOL("pc");
-	map = GET_SYMBOL("map");
-	itemdb = GET_SYMBOL("itemdb");
-	intif = GET_SYMBOL("intif");
-	pet = GET_SYMBOL("pet");
-
 	addAtcommand("storeitem",storeitem);
 }

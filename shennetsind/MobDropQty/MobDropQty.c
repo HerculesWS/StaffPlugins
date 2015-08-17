@@ -2,16 +2,16 @@
 // See the LICENSE file
 // Sample Hercules Plugin
 
+#include "common/hercules.h"
+#include "common/mmo.h"
+#include "map/itemdb.h"
+#include "map/mob.h"
+
+#include "common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-#include "../common/HPMi.h"
-#include "../common/mmo.h"
-#include "../map/mob.h"
-#include "../map/itemdb.h"
-
-#include "../common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
 
 /**
  * Adds a 50% ( customizeable ) chance for ETC (customizeable) items to drop from mobs with double quantity
@@ -70,10 +70,6 @@ struct item_drop *mob_setdropitem_pre(int *nameid, int *qty, struct item_data *d
  * We started!
  **/
 HPExport void plugin_init (void) {
-
-	/* thats all we need! */
-	mob = GET_SYMBOL("mob");
-
 	/* lets hook! */
 	addHookPre("mob->setdropitem",mob_setdropitem_pre);
 }

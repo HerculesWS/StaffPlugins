@@ -2,26 +2,25 @@
 // See the LICENSE file
 // Sample Hercules Plugin
 
+#include "common/hercules.h"
+#include "common/malloc.h"
+#include "common/mmo.h"
+#include "common/socket.h"
+#include "common/strlib.h"
+#include "common/timer.h"
+#include "map/battle.h"
+#include "map/clif.h"
+#include "map/mob.h"
+#include "map/npc.h"
+#include "map/pc.h"
+#include "map/status.h"
+#include "map/unit.h"
+
+#include "common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-#include "../common/HPMi.h"
-#include "../common/mmo.h"
-#include "../common/socket.h"
-#include "../common/malloc.h"
-#include "../common/strlib.h"
-#include "../common/timer.h"
-
-#include "../map/battle.h"
-#include "../map/pc.h"
-#include "../map/clif.h"
-#include "../map/mob.h"
-#include "../map/npc.h"
-#include "../map/status.h"
-#include "../map/unit.h"
-
-#include "../common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
 
 /**
  * Monsters HP is visible to all players, instead of only those who hit it.
@@ -304,7 +303,7 @@ static int clif_setlevel(struct block_list* bl) {
 /**
  * VMHP_update (VisibleMonsterHP_Update) -- yes, awful!
  **/
-void VMHP_update( struct mob_data* md ) {
+static void VMHP_update( struct mob_data* md ) {
 	struct packet_monster_hp p;
 
 	p.PacketType = monsterhpType;
@@ -318,7 +317,7 @@ void VMHP_update( struct mob_data* md ) {
 /**
  * mob->heal overload
  **/
-void mob_heal(struct mob_data *md,unsigned int heal) {
+void mob_heal_overload(struct mob_data *md,unsigned int heal) {
 	if (battle->bc->show_mob_info&3)
 		clif->charnameack (0, &md->bl);
 
@@ -330,7 +329,7 @@ void mob_heal(struct mob_data *md,unsigned int heal) {
 /**
  * mob->damage overload
  **/
-void mob_damage(struct mob_data *md, struct block_list *src, int damage) {
+void mob_damage_overload(struct mob_data *md, struct block_list *src, int damage) {
 	if (damage > 0) { //Store total damage...
 		if (UINT_MAX - (unsigned int)damage > md->tdmg)
 			md->tdmg+=damage;
@@ -372,7 +371,7 @@ void mob_damage(struct mob_data *md, struct block_list *src, int damage) {
 /**
  * clif->set_unit_idle overload
  **/
-void clif_set_unit_idle(struct block_list* bl, struct map_session_data *tsd, enum send_target target) {
+void clif_set_unit_idle_overload(struct block_list* bl, struct map_session_data *tsd, enum send_target target) {
 	struct map_session_data* sd;
 	struct status_change* sc = status->get_sc(bl);
 	struct view_data* vd = status->get_viewdata(bl);
@@ -458,7 +457,7 @@ void clif_set_unit_idle(struct block_list* bl, struct map_session_data *tsd, enu
 /**
  * clif->spawn_unit overload
  **/
-void clif_spawn_unit(struct block_list* bl, enum send_target target) {
+void clif_spawn_unit_overload(struct block_list* bl, enum send_target target) {
 	struct map_session_data* sd;
 	struct status_change* sc = status->get_sc(bl);
 	struct view_data* vd = status->get_viewdata(bl);
@@ -543,7 +542,7 @@ void clif_spawn_unit(struct block_list* bl, enum send_target target) {
 /**
  * clif->set_unit_walking overload
  **/
-void clif_set_unit_walking(struct block_list* bl, struct map_session_data *tsd, struct unit_data* ud, enum send_target target) {
+void clif_set_unit_walking_overload(struct block_list* bl, struct map_session_data *tsd, struct unit_data* ud, enum send_target target) {
 	struct map_session_data* sd;
 	struct status_change* sc = status->get_sc(bl);
 	struct view_data* vd = status->get_viewdata(bl);
@@ -621,22 +620,10 @@ void clif_set_unit_walking(struct block_list* bl, struct map_session_data *tsd, 
  * We started!
  **/
 HPExport void plugin_init (void) {
+	clif->set_unit_walking = clif_set_unit_walking_overload;
+	clif->set_unit_idle = clif_set_unit_idle_overload;
+	clif->spawn_unit = clif_spawn_unit_overload;
 
-	iMalloc = GET_SYMBOL("iMalloc");
-	strlib = GET_SYMBOL("strlib");
-	timer = GET_SYMBOL("timer");
-
-	battle = GET_SYMBOL("battle");
-	clif = GET_SYMBOL("clif");
-	mob = GET_SYMBOL("mob");
-	pc = GET_SYMBOL("pc");
-	status = GET_SYMBOL("status");
-	unit = GET_SYMBOL("unit");
-
-	clif->set_unit_walking = clif_set_unit_walking;
-	clif->set_unit_idle = clif_set_unit_idle;
-	clif->spawn_unit = clif_spawn_unit;
-
-	mob->damage = mob_damage;
-	mob->heal = mob_heal;
+	mob->damage = mob_damage_overload;
+	mob->heal = mob_heal_overload;
 }

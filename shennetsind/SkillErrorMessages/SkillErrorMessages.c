@@ -3,16 +3,16 @@
 
 /* [Ind/Hercules] - shennetsind */
 
+#include "common/hercules.h"
+#include "common/strlib.h"
+#include "common/timer.h"
+#include "map/clif.h"
+#include "map/map.h"
+#include "map/pc.h"
+#include "common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
+
 #include <stdio.h>
 #include <string.h>
-#include "../common/HPMi.h"
-#include "../common/strlib.h"
-#include "../common/timer.h"
-#include "../map/clif.h"
-#include "../map/pc.h"
-#include "../map/map.h"
-
-#include "../common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
 
 HPExport struct hplugin_info pinfo = {
 	"SkillErrorMessages",		// Plugin name
@@ -33,7 +33,7 @@ void SKM_skill_fail(struct map_session_data *sd,uint16 skill_id,enum useskill_fa
 		case USESKILL_FAIL_SPIRITS: {
 			char output[80];
 			safesnprintf(output,80,"%s requires a total %d spirit spheres",skill->get_desc(skill_id),btype);
-			clif->colormes(sd->fd,COLOR_RED,output);
+			clif->messagecolor_self(sd->fd,COLOR_RED,output);
 		}
 			break;
 		default:/* we dont handle, throw at the original */
@@ -43,9 +43,6 @@ void SKM_skill_fail(struct map_session_data *sd,uint16 skill_id,enum useskill_fa
 }
 
 HPExport void plugin_init (void) {
-	clif = GET_SYMBOL("clif");
-	skill = GET_SYMBOL("skill");
-	strlib = GET_SYMBOL("strlib");
 	clif_sk_fail_original = clif->skill_fail;
 	clif->skill_fail = SKM_skill_fail;
 }

@@ -18,23 +18,23 @@
 
 /// Vim syntax highlighter generator
 
-#include "../common/cbasetypes.h"
-#include "../common/malloc.h"
-#include "../common/strlib.h"
-#include "../common/HPMi.h"
-#include "../map/map.h"
-#include "../map/itemdb.h"
-#include "../map/script.h"
-#include "../map/status.h" // Required by skill.h
-#include "../map/skill.h"
-#include "../map/mob.h"
+#include "common/hercules.h"
+#include "common/cbasetypes.h"
+#include "common/malloc.h"
+#include "common/strlib.h"
+#include "map/itemdb.h"
+#include "map/map.h"
+#include "map/mob.h"
+#include "map/script.h"
+#include "map/skill.h"
+
+#include "common/HPMDataCheck.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <sys/stat.h>
-
-#include "../common/HPMDataCheck.h"
 
 #if !defined(LINE_LENGTH) || LINE_LENGTH < 72
 #define LINE_LENGTH 120
@@ -187,8 +187,8 @@ void vimsyntaxgen_skilldb(void) {
 	fprintf(local.fp, "\" Skills (imported from db/*/skill_db.txt)\n");
 	vimsyntaxgen_set(SYNKEYWORDPREFIX"hSkillId ", " ", "");
 	for (i = 1; i < MAX_SKILL_DB; i++) {
-		if (skill->db[i].name[0])
-			vimsyntaxgen_append(skill->db[i].name);
+		if (skill->dbs->db[i].name[0])
+			vimsyntaxgen_append(skill->dbs->db[i].name);
 	}
 	vimsyntaxgen_flush(1);
 }
@@ -1029,14 +1029,6 @@ CMDLINEARG(vimsyntaxgen)
 	return true;
 }
 HPExport void server_preinit(void) {
-	map = GET_SYMBOL("map");
-	script = GET_SYMBOL("script");
-	skill = GET_SYMBOL("skill");
-	mob = GET_SYMBOL("mob");
-	itemdb = GET_SYMBOL("itemdb");
-	strlib = GET_SYMBOL("strlib");
-	iMalloc = GET_SYMBOL("iMalloc");
-
 	addArg("--vimsyntaxgen", false, vimsyntaxgen, NULL);
 }
 HPExport void plugin_init(void) {

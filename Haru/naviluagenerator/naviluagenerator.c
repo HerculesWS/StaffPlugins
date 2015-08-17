@@ -19,24 +19,25 @@
 
 /// Navigation system LUA generator
 
-#include "../common/cbasetypes.h"
-#include "../common/strlib.h"
-#include "../common/HPMi.h"
-#include "../common/db.h"
-#include "../common/malloc.h"
-#include "../common/mmo.h"
-#include "../map/map.h"
-#include "../map/path.h"
-#include "../map/pc.h"
-#include "../map/mob.h"
-#include "../map/npc.h"
+#include "common/hercules.h"
+#include "common/cbasetypes.h"
+#include "common/db.h"
+#include "common/malloc.h"
+#include "common/mmo.h"
+#include "common/strlib.h"
+#include "map/map.h"
+#include "map/mob.h"
+#include "map/npc.h"
+#include "map/path.h"
+#include "map/pc.h"
+
+#include "common/HPMDataCheck.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <sys/stat.h>
-
-#include "../common/HPMDataCheck.h"
 
 /*************************** CONFIGURATION ***************************/
 // See README.md for a description of these options.
@@ -795,13 +796,8 @@ CPCMD(createnavigationlua) {
 	do_navigationlua(map->cpsd);
 }
 HPExport void server_preinit(void) {
-	map = GET_SYMBOL("map");
-	iMalloc = GET_SYMBOL("iMalloc");
-	clif = GET_SYMBOL("clif");
-	mob = GET_SYMBOL("mob");
-	strlib = GET_SYMBOL("strlib");
 }
 HPExport void plugin_init(void) {
 	addCPCommand("server:tools:navigationlua", createnavigationlua);
-	addAtcommand("createnavigationlua", createnavigationlua)
+	addAtcommand("createnavigationlua", createnavigationlua);
 }

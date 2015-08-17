@@ -4,18 +4,19 @@
 // Vend_SQL Plugin - Yommy
 // Inserts Player vends into sql database
 
+#include "common/hercules.h"
+#include "common/sql.h"
+#include "common/strlib.h"
+#include "common/timer.h"
+#include "map/map.h"
+#include "map/npc.h"
+#include "map/pc.h"
+#include "map/script.h"
+
+#include "common/HPMDataCheck.h"
+
 #include <stdio.h>
 #include <string.h>
-#include "../common/HPMi.h"
-#include "../common/sql.h"
-#include "../common/strlib.h"
-#include "../common/timer.h"
-#include "../map/map.h"
-#include "../map/npc.h"
-#include "../map/pc.h"
-#include "../map/script.h"
-
-#include "../common/HPMDataCheck.h"
 
 static char vendingstat_table[32] = "vending_stat";
 static uint32 vendingstat_refresh_sec = 120;
@@ -76,7 +77,7 @@ int map_vendingstat_tosql_timer(int tid, int64 tick, int id, intptr_t data) {
 	StrBuf->Printf(buf, "INSERT DELAYED INTO `%s` (`type`,`owner`,`shop`,`map`,`x`,`y`,`nameid`,`refine`,`card0`,`card1`,`card2`,`card3`,`amount`,`price`) VALUES ", vendingstat_table);
 
 	// Insert PC shops into query string
-	for( sd = (struct map_session_data*)mapit->first(iter); mapit->exists(iter); sd = (struct map_session_data*)mapit->next(iter) ) {
+	for( sd = BL_CAST(BL_PC, mapit->first(iter)); mapit->exists(iter); sd = BL_CAST(BL_PC, mapit->next(iter)) ) {
 		char map_esc[MAP_NAME_LENGTH*2+1];
 		char name_esc[NAME_LENGTH*2+1];
 		char shop_esc[MESSAGE_SIZE*2+1];
@@ -164,11 +165,6 @@ void do_init_vendingstat()
 }
 
 HPExport void plugin_init (void) {
-	StrBuf = GET_SYMBOL("StrBuf");
-	SQL = GET_SYMBOL("SQL");
-	map = GET_SYMBOL("map");
-	mapit = GET_SYMBOL("mapit");
-	timer = GET_SYMBOL("timer");
 }
 
 /* run when server is ready (online) */

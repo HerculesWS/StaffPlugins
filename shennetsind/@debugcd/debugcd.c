@@ -2,16 +2,17 @@
 // See the LICENSE file
 // Sample Hercules Plugin
 
+#include "common/hercules.h"
+#include "common/db.h"
+#include "map/clif.h"
+#include "map/map.h"
+#include "map/pc.h"
+#include "map/skill.h"
+
+#include "common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
+
 #include <stdio.h>
 #include <string.h>
-#include "../common/HPMi.h"
-#include "../common/db.h"
-#include "../map/pc.h"
-#include "../map/skill.h"
-#include "../map/clif.h"
-#include "../map/map.h"
-
-#include "../common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
 
 HPExport struct hplugin_info pinfo = {
 	"@debugcd",		// Plugin name
@@ -50,10 +51,5 @@ ACMD(debugcd) {
 }
 
 HPExport void plugin_init (void) {
-	skill = GET_SYMBOL("skill");
-	map = GET_SYMBOL("map");
-	DB = GET_SYMBOL("DB");
-	clif = GET_SYMBOL("clif");
-
 	addAtcommand("debugcd",debugcd);
 }

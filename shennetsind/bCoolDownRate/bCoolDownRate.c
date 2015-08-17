@@ -2,21 +2,21 @@
 // See the LICENSE file
 // Sample Hercules Plugin
 
+#include "common/hercules.h"
+#include "common/malloc.h"
+#include "common/mmo.h"
+#include "common/socket.h"
+#include "map/map.h"
+#include "map/pc.h"
+#include "map/script.h"
+#include "map/skill.h"
+#include "map/status.h"
+
+#include "common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-#include "../common/HPMi.h"
-#include "../common/mmo.h"
-#include "../common/socket.h"
-#include "../common/malloc.h"
-#include "../map/map.h"
-#include "../map/pc.h"
-#include "../map/skill.h"
-#include "../map/script.h"
-#include "../map/status.h"
-
-#include "../common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
 
 /* works like bDelayRate */
 /* example: cooldown is 10000 (10s) */
@@ -74,13 +74,7 @@ int status_calc_pc_preHook(struct map_session_data* sd, bool *first) {
 	return 1;/* doesn't matter */
 }
 
-HPExport void plugin_init (void) {
-	/* need those interfaces */
-	iMalloc = GET_SYMBOL("iMalloc");
-	map = GET_SYMBOL("map");
-	script = GET_SYMBOL("script");
-	status = GET_SYMBOL("status");
-
+HPExport void plugin_init(void) {
 	/* grab a unique bonus ID for us */
 	bCoolDownRateID = map->get_new_bonus_id();
 	/* set constant 'bCoolDownRate', and set value to bCoolDownRateID */

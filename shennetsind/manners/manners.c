@@ -2,20 +2,20 @@
 // See the LICENSE file
 // Sample Hercules Plugin
 
+#include "common/hercules.h"
+#include "common/malloc.h"
+#include "common/mmo.h"
+#include "common/socket.h"
+#include "common/strlib.h"
+#include "map/atcommand.h"
+#include "map/clif.h"
+#include "map/pc.h"
+
+#include "common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-#include "../common/HPMi.h"
-#include "../common/mmo.h"
-#include "../common/socket.h"
-#include "../common/malloc.h"
-#include "../common/strlib.h"
-#include "../map/atcommand.h"
-#include "../map/pc.h"
-#include "../map/clif.h"
-
-#include "../common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
 
 /**
  * Reads off conf/manners.txt
@@ -57,7 +57,7 @@ bool clif_process_message_post(bool retVal, struct map_session_data *sd, int *fo
 		if( stristr(message,badlist[i]) ) {
 			char output[254];
 			sprintf(output,"Thou shall not utter '%s'!",badlist[i]);
-			clif->colormes(sd->fd,COLOR_RED,output);
+			clif->messagecolor_self(sd->fd,COLOR_RED,output);
 			return false;
 		}
 	}
@@ -125,13 +125,6 @@ ACMD(reloadmanners) {
  * We started!
  **/
 HPExport void plugin_init (void) {
-
-	iMalloc = GET_SYMBOL("iMalloc");
-	strlib = GET_SYMBOL("strlib");
-
-	clif = GET_SYMBOL("clif");
-	pc = GET_SYMBOL("pc");
-
 	/* lets add our command! */
 	addAtcommand("reloadmanners",reloadmanners);
 

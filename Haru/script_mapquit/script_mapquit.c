@@ -18,11 +18,11 @@
 
 /// mapquit() script command
 
-#include "../common/HPMi.h"
-#include "../map/map.h"
-#include "../map/script.h"
+#include "common/hercules.h"
+#include "map/map.h"
+#include "map/script.h"
 
-#include "../common/HPMDataCheck.h"
+#include "common/HPMDataCheck.h"
 
 HPExport struct hplugin_info pinfo = {
 	"script_mapquit",    // Plugin name
@@ -39,8 +39,6 @@ BUILDIN(mapquit) {
 	return true;
 }
 HPExport void server_preinit(void) {
-	map = GET_SYMBOL("map");
-	script = GET_SYMBOL("script");
 }
 HPExport void plugin_init(void) {
 	addScriptCommand("mapquit", "?", mapquit);
