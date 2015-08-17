@@ -21,4 +21,4 @@ updates itself every 5 minutes, the data stored is the following:
 The plugin will automatically create, update and clear the table, so you have to do nothing.
 
 ============
-####How to Install a Plugin: [Building a Plugin](http://hercules.ws/wiki/HPM#Building_a_plugin)
+####How to Install a Plugin: [Building a Plugin](http://herc.ws/wiki/HPM#Building_a_plugin)
