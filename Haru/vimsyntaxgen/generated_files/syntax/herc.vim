@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:    Hercules/*Athena Script
 " Maintainer:  Haru <haru@dotalux.com>
-" Last Change: 2013-12-11
+" Last Change: 2015-08-18
 
 
 " For version 5.x: Clear all syntax items
@@ -16,7 +16,7 @@ endif
 " Allowed characters in a keyword
 setlocal iskeyword=@,',_,a-z,A-Z,48-57
 
-syn match	hVariable	display "\<\%(\|\.\|\.@\|@\|\$\|'\|##\?\)\I\i*$\?\>"
+syn match	hVariable	display "\<\%(\.\?\.@\?\|\$\|'\|##\?\)\I\i*\$\?\>"
 
 syn keyword	hKeyword	break continue
 " FIXME hKeyword function
@@ -30,7 +30,7 @@ syn cluster	hCommentGroup	contains=hTodo
 
 " String constants
 " Escaped double quotes
-syn match	hStringSpecial	display contained "\\\"\|\\\\"
+syn match	hStringSpecial	display contained "\\\"\|\\[abtnvfr?]\|\\x[0-9a-fA-F]\{2\}\|\\[0-3][0-7]\+\|\\\\"
 " Color constants
 syn match	hColor		display contained "\^[0-9a-fA-F]\{6\}"
 " Event names
@@ -47,7 +47,6 @@ syn region	hString		start=+"+ skip=+\\\\\|\\"\|\\$+ excludenl end=+"+ end='$' co
 "  endif
 "endif
 
-" This should be before cErrInParen to avoid problems with #define ({ xxx })
 if exists("c_curly_error")
   syntax match hCurlyError	"}"
   syntax region hBlock		start="{" end="}" contains=ALLBUT,hCurlyError,@hParenGroup,hErrInParen,hErrInBracket,hString,@hTopLevel,@Spell fold
@@ -116,7 +115,7 @@ syntax match	hTopMapflag	excludenl "zone\t.*" contained
 
 syntax match	hTopTypeM	excludenl "\%(\|boss_\)monster\t" contained nextgroup=hTopNameMob,hTopError
 syntax match	hTopTypeW	excludenl "warp\t" contained nextgroup=hTopNameWarp,hTopError
-syntax match	hTopTypeS	excludenl "script\t" contained nextgroup=hTopNameScript,hTopError
+syntax match	hTopTypeS	excludenl "\%(script\|trader\)\t" contained nextgroup=hTopNameScript,hTopError
 syntax match	hTopTypeS	excludenl "\%(\|cash\)shop\t" contained nextgroup=hTopNameShop,hTopError
 syntax match	hTopTypeMF	excludenl "mapflag\t" contained nextgroup=hTopMapflag,hTopError
 syntax match	hTopType	excludenl "duplicate([^)\t]*)\t"he=e-1 contains=hDupName contained nextgroup=hTopNameDup,hTopError
@@ -177,7 +176,6 @@ syn keyword hConstant EAJ_SORCERER_T EAJ_MINSTRELWANDERER_T EAJ_SURA_T EAJ_GENET
 syn keyword hConstant EAJ_SUPER_BABY_E EAJ_BABY_RUNE EAJ_BABY_WARLOCK EAJ_BABY_RANGER EAJ_BABY_BISHOP EAJ_BABY_MECHANIC
 syn keyword hConstant EAJ_BABY_CROSS EAJ_BABY_GUARD EAJ_BABY_SORCERER EAJ_BABY_MINSTRELWANDERER EAJ_BABY_SURA
 syn keyword hConstant EAJ_BABY_GENETIC EAJ_BABY_CHASER
-syn keyword hConstant Option_Wedding Option_Xmas Option_Summer Option_Wug Option_Wugrider
 syn keyword hConstant bc_all bc_map bc_area bc_self bc_pc bc_npc bc_yellow bc_blue bc_woe
 syn keyword hConstant mf_nomemo mf_noteleport mf_nosave mf_nobranch mf_nopenalty mf_nozenypenalty mf_pvp mf_pvp_noparty
 syn keyword hConstant mf_pvp_noguild mf_gvg mf_gvg_noparty mf_notrade mf_noskill mf_nowarp mf_partylock mf_noicewall
@@ -217,7 +215,7 @@ syn keyword hConstant bUnstripableArmor bUnstripableHelm bUnstripableShield bInt
 syn keyword hConstant bSPLossRate bAddSkillBlow bSPVanishRate bMagicSPGainValue bMagicHPGainValue bAddClassDropItem
 syn keyword hConstant bMatk bSPGainRaceAttack bHPGainRaceAttack bSkillUseSPrate bSkillCooldown bSkillFixedCast
 syn keyword hConstant bSkillVariableCast bFixedCastrate bVariableCastrate bSkillUseSP bMagicAtkEle bFixedCast
-syn keyword hConstant bVariableCast
+syn keyword hConstant bVariableCast bSetDefRace bSetMDefRace bAddRaceTolerance
 syn keyword hConstant EQI_HEAD_TOP EQI_ARMOR EQI_HAND_L EQI_HAND_R EQI_GARMENT EQI_SHOES EQI_ACC_L EQI_ACC_R
 syn keyword hConstant EQI_HEAD_MID EQI_HEAD_LOW EQI_COSTUME_HEAD_LOW EQI_COSTUME_HEAD_MID EQI_COSTUME_HEAD_TOP
 syn keyword hConstant EQI_COSTUME_GARMENT EQI_SHADOW_ARMOR EQI_SHADOW_WEAPON EQI_SHADOW_SHIELD EQI_SHADOW_SHOES
@@ -225,28 +223,29 @@ syn keyword hConstant EQI_SHADOW_ACC_R EQI_SHADOW_ACC_L
 syn keyword hConstant LOOK_BASE LOOK_HAIR LOOK_WEAPON LOOK_HEAD_BOTTOM LOOK_HEAD_TOP LOOK_HEAD_MID LOOK_HAIR_COLOR
 syn keyword hConstant LOOK_CLOTHES_COLOR LOOK_SHIELD LOOK_SHOES LOOK_BODY LOOK_FLOOR LOOK_ROBE
 syn keyword hConstant Eff_Stone Eff_Freeze Eff_Stun Eff_Sleep Eff_Poison Eff_Curse Eff_Silence Eff_Confusion Eff_Blind
-syn keyword hConstant Eff_Bleeding Eff_DPoison Eff_Burning
+syn keyword hConstant Eff_Bleeding Eff_DPoison Eff_Fear Eff_Cold Eff_Burning Eff_Deepsleep
 syn keyword hConstant Ele_Neutral Ele_Water Ele_Earth Ele_Fire Ele_Wind Ele_Poison Ele_Holy Ele_Dark Ele_Ghost
-syn keyword hConstant Ele_Undead
+syn keyword hConstant Ele_Undead Ele_All
 syn keyword hConstant RC_Formless RC_Undead RC_Brute RC_Plant RC_Insect RC_Fish RC_Demon RC_DemiHuman RC_Angel
-syn keyword hConstant RC_Dragon RC_Boss RC_NonBoss RC_NonDemiHuman
-syn keyword hConstant RC2_None RC2_Goblin RC2_Kobold RC2_Orc RC2_Golem RC2_Guardian RC2_Ninja
+syn keyword hConstant RC_Dragon RC_Player RC_Boss RC_NonBoss RC_NonDemiHuman RC_NonPlayer RC_DemiPlayer
+syn keyword hConstant RC_NonDemiPlayer RC_All
+syn keyword hConstant RC2_None RC2_Goblin RC2_Kobold RC2_Orc RC2_Golem RC2_Guardian RC2_Ninja RC2_Scaraba RC2_Turtle
 syn keyword hConstant Size_Small Size_Medium Size_Large
 syn keyword hConstant BF_WEAPON BF_MAGIC BF_MISC BF_SHORT BF_LONG BF_SKILL BF_NORMAL
 syn keyword hConstant ATF_SELF ATF_TARGET ATF_SHORT ATF_LONG ATF_WEAPON ATF_MAGIC ATF_MISC ATF_SKILL
 syn keyword hConstant SC_ALL SC_STONE SC_FREEZE SC_STUN SC_SLEEP SC_POISON SC_CURSE SC_SILENCE SC_CONFUSION SC_BLIND
-syn keyword hConstant SC_BLOODING SC_DPOISON SC_BURNING SC_PROVOKE SC_ENDURE SC_TWOHANDQUICKEN SC_CONCENTRATION
-syn keyword hConstant SC_HIDING SC_CLOAKING SC_ENCHANTPOISON SC_POISONREACT SC_QUAGMIRE SC_ANGELUS SC_BLESSING
-syn keyword hConstant SC_CRUCIS SC_INC_AGI SC_DEC_AGI SC_SLOWPOISON SC_IMPOSITIO SC_SUFFRAGIUM SC_ASPERSIO
-syn keyword hConstant SC_BENEDICTIO SC_KYRIE SC_MAGNIFICAT SC_GLORIA SC_LEXAETERNA SC_ADRENALINE SC_WEAPONPERFECT
-syn keyword hConstant SC_OVERTHRUST SC_MAXIMIZEPOWER SC_TRICKDEAD SC_SHOUT SC_ENERGYCOAT SC_BROKENARMOR SC_BROKENWEAPON
-syn keyword hConstant SC_ILLUSION SC_WEIGHTOVER50 SC_WEIGHTOVER90 SC_ATTHASTE_POTION1 SC_ATTHASTE_POTION2
-syn keyword hConstant SC_ATTHASTE_POTION3 SC_ATTHASTE_INFINITY SC_MOVHASTE_HORSE SC_MOVHASTE_INFINITY
-syn keyword hConstant SC_PLUSATTACKPOWER SC_PLUSMAGICPOWER SC_WEDDING SC_SLOWDOWN SC_ANKLESNARE SC_KEEPING SC_BARRIER
-syn keyword hConstant SC_NOEQUIPWEAPON SC_NOEQUIPSHIELD SC_NOEQUIPARMOR SC_NOEQUIPHELM SC_PROTECTWEAPON
-syn keyword hConstant SC_PROTECTSHIELD SC_PROTECTARMOR SC_PROTECTHELM SC_AUTOGUARD SC_REFLECTSHIELD SC_SPLASHER
-syn keyword hConstant SC_PROVIDENCE SC_DEFENDER SC_MAGICROD SC_SPELLBREAKER SC_AUTOSPELL SC_SIGHTTRASHER SC_AUTOBERSERK
-syn keyword hConstant SC_SPEARQUICKEN SC_AUTOCOUNTER SC_SIGHT SC_SAFETYWALL SC_RUWACH SC_EXTREMITYFIST
+syn keyword hConstant SC_BLOODING SC_DPOISON SC_FEAR SC_COLD SC_BURNING SC_DEEP_SLEEP SC_PROVOKE SC_ENDURE
+syn keyword hConstant SC_TWOHANDQUICKEN SC_CONCENTRATION SC_HIDING SC_CLOAKING SC_ENCHANTPOISON SC_POISONREACT
+syn keyword hConstant SC_QUAGMIRE SC_ANGELUS SC_BLESSING SC_CRUCIS SC_INC_AGI SC_DEC_AGI SC_SLOWPOISON SC_IMPOSITIO
+syn keyword hConstant SC_SUFFRAGIUM SC_ASPERSIO SC_BENEDICTIO SC_KYRIE SC_MAGNIFICAT SC_GLORIA SC_LEXAETERNA
+syn keyword hConstant SC_ADRENALINE SC_WEAPONPERFECT SC_OVERTHRUST SC_MAXIMIZEPOWER SC_TRICKDEAD SC_SHOUT SC_ENERGYCOAT
+syn keyword hConstant SC_BROKENARMOR SC_BROKENWEAPON SC_ILLUSION SC_WEIGHTOVER50 SC_WEIGHTOVER90 SC_ATTHASTE_POTION1
+syn keyword hConstant SC_ATTHASTE_POTION2 SC_ATTHASTE_POTION3 SC_ATTHASTE_INFINITY SC_MOVHASTE_HORSE
+syn keyword hConstant SC_MOVHASTE_INFINITY SC_PLUSATTACKPOWER SC_PLUSMAGICPOWER SC_WEDDING SC_SLOWDOWN SC_ANKLESNARE
+syn keyword hConstant SC_KEEPING SC_BARRIER SC_NOEQUIPWEAPON SC_NOEQUIPSHIELD SC_NOEQUIPARMOR SC_NOEQUIPHELM
+syn keyword hConstant SC_PROTECTWEAPON SC_PROTECTSHIELD SC_PROTECTARMOR SC_PROTECTHELM SC_AUTOGUARD SC_REFLECTSHIELD
+syn keyword hConstant SC_SPLASHER SC_PROVIDENCE SC_DEFENDER SC_MAGICROD SC_SPELLBREAKER SC_AUTOSPELL SC_SIGHTTRASHER
+syn keyword hConstant SC_AUTOBERSERK SC_SPEARQUICKEN SC_AUTOCOUNTER SC_SIGHT SC_SAFETYWALL SC_RUWACH SC_EXTREMITYFIST
 syn keyword hConstant SC_EXPLOSIONSPIRITS SC_COMBOATTACK SC_BLADESTOP_WAIT SC_BLADESTOP SC_PROPERTYFIRE
 syn keyword hConstant SC_PROPERTYWATER SC_PROPERTYWIND SC_PROPERTYGROUND SC_VOLCANO SC_DELUGE SC_VIOLENTGALE
 syn keyword hConstant SC_SUB_WEAPONPROPERTY SC_ARMOR SC_ARMORPROPERTY SC_NOCHAT SC_BABY SC_AURABLADE SC_PARRYING
@@ -279,31 +278,30 @@ syn keyword hConstant SC_MER_FLEE SC_MER_ATK SC_MER_HP SC_MER_SP SC_MER_HIT SC_M
 syn keyword hConstant SC_S_LIFEPOTION SC_L_LIFEPOTION SC_CASH_PLUSONLYJOBEXP SC_HELLPOWER SC_INVINCIBLE
 syn keyword hConstant SC_INVINCIBLEOFF SC_MANU_ATK SC_MANU_DEF SC_SPL_ATK SC_SPL_DEF SC_MANU_MATK SC_SPL_MATK
 syn keyword hConstant SC_FOOD_STR_CASH SC_FOOD_AGI_CASH SC_FOOD_VIT_CASH SC_FOOD_DEX_CASH SC_FOOD_INT_CASH
-syn keyword hConstant SC_FOOD_LUK_CASH SC_FEAR SC_FROSTMISTY SC_ENCHANTBLADE SC_DEATHBOUND SC_MILLENNIUMSHIELD
-syn keyword hConstant SC_CRUSHSTRIKE SC_REFRESH SC_REUSE_REFRESH SC_GIANTGROWTH SC_STONEHARDSKIN SC_VITALITYACTIVATION
-syn keyword hConstant SC_STORMBLAST SC_FIGHTINGSPIRIT SC_ABUNDANCE SC_ADORAMUS SC_EPICLESIS SC_ORATIO SC_LAUDAAGNUS
-syn keyword hConstant SC_LAUDARAMUS SC_RENOVATIO SC_EXPIATIO SC_DUPLELIGHT SC_SECRAMENT SC_WHITEIMPRISON
-syn keyword hConstant SC_MARSHOFABYSS SC_RECOGNIZEDSPELL SC_STASIS SC_SUMMON1 SC_SUMMON2 SC_SUMMON3 SC_SUMMON4
-syn keyword hConstant SC_SUMMON5 SC_READING_SB SC_FREEZINGSP SC_FEARBREEZE SC_ELECTRICSHOCKER SC_WUGDASH SC_WUGBITE
-syn keyword hConstant SC_CAMOUFLAGE SC_ACCELERATION SC_HOVERING SC_SHAPESHIFT SC_INFRAREDSCAN SC_ANALYZE
-syn keyword hConstant SC_MAGNETICFIELD SC_NEUTRALBARRIER SC_NEUTRALBARRIER_MASTER SC_STEALTHFIELD
-syn keyword hConstant SC_STEALTHFIELD_MASTER SC_OVERHEAT SC_OVERHEAT_LIMITPOINT SC_VENOMIMPRESS SC_POISONINGWEAPON
-syn keyword hConstant SC_WEAPONBLOCKING SC_CLOAKINGEXCEED SC_HALLUCINATIONWALK SC_HALLUCINATIONWALK_POSTDELAY
-syn keyword hConstant SC_ROLLINGCUTTER SC_TOXIN SC_PARALYSE SC_VENOMBLEED SC_MAGICMUSHROOM SC_DEATHHURT SC_PYREXIA
-syn keyword hConstant SC_OBLIVIONCURSE SC_LEECHESEND SC_LG_REFLECTDAMAGE SC_FORCEOFVANGUARD SC_SHIELDSPELL_DEF
-syn keyword hConstant SC_SHIELDSPELL_MDEF SC_SHIELDSPELL_REF SC_EXEEDBREAK SC_PRESTIGE SC_BANDING SC_BANDING_DEFENCE
-syn keyword hConstant SC_EARTHDRIVE SC_INSPIRATION SC_SPELLFIST SC_COLD SC_STRIKING SC_WARMER SC_VACUUM_EXTREME
-syn keyword hConstant SC_PROPERTYWALK SC_SWING SC_SYMPHONY_LOVE SC_MOONLIT_SERENADE SC_RUSH_WINDMILL SC_ECHOSONG
-syn keyword hConstant SC_HARMONIZE SC_SIREN SC_DEEP_SLEEP SC_SIRCLEOFNATURE SC_GLOOMYDAY SC_GLOOMYDAY_SK
-syn keyword hConstant SC_SONG_OF_MANA SC_DANCE_WITH_WUG SC_SATURDAY_NIGHT_FEVER SC_LERADS_DEW SC_MELODYOFSINK
-syn keyword hConstant SC_BEYOND_OF_WARCRY SC_UNLIMITED_HUMMING_VOICE SC_SITDOWN_FORCE SC_NETHERWORLD SC_CRESCENTELBOW
-syn keyword hConstant SC_CURSEDCIRCLE_ATKER SC_CURSEDCIRCLE_TARGET SC_LIGHTNINGWALK SC_RAISINGDRAGON
-syn keyword hConstant SC_GENTLETOUCH_ENERGYGAIN SC_GENTLETOUCH_CHANGE SC_GENTLETOUCH_REVITALIZE SC_GN_CARTBOOST
-syn keyword hConstant SC_THORNS_TRAP SC_BLOOD_SUCKER SC_FIRE_EXPANSION_SMOKE_POWDER SC_FIRE_EXPANSION_TEAR_GAS
-syn keyword hConstant SC_MANDRAGORA SC_STOMACHACHE SC_MYSTERIOUS_POWDER SC_MELON_BOMB SC_BANANA_BOMB
-syn keyword hConstant SC_BANANA_BOMB_SITDOWN_POSTDELAY SC_SAVAGE_STEAK SC_COCKTAIL_WARG_BLOOD SC_MINOR_BBQ
-syn keyword hConstant SC_SIROMA_ICE_TEA SC_DROCERA_HERB_STEAMED SC_PUTTI_TAILS_NOODLES SC_BOOST500 SC_FULL_SWING_K
-syn keyword hConstant SC_MANA_PLUS SC_MUSTLE_M SC_LIFE_FORCE_F SC_EXTRACT_WHITE_POTION_Z SC_VITATA_500
+syn keyword hConstant SC_FOOD_LUK_CASH SC_FROSTMISTY SC_ENCHANTBLADE SC_DEATHBOUND SC_MILLENNIUMSHIELD SC_CRUSHSTRIKE
+syn keyword hConstant SC_REFRESH SC_REUSE_REFRESH SC_GIANTGROWTH SC_STONEHARDSKIN SC_VITALITYACTIVATION SC_STORMBLAST
+syn keyword hConstant SC_FIGHTINGSPIRIT SC_ABUNDANCE SC_ADORAMUS SC_EPICLESIS SC_ORATIO SC_LAUDAAGNUS SC_LAUDARAMUS
+syn keyword hConstant SC_RENOVATIO SC_EXPIATIO SC_DUPLELIGHT SC_SECRAMENT SC_WHITEIMPRISON SC_MARSHOFABYSS
+syn keyword hConstant SC_RECOGNIZEDSPELL SC_STASIS SC_SUMMON1 SC_SUMMON2 SC_SUMMON3 SC_SUMMON4 SC_SUMMON5 SC_READING_SB
+syn keyword hConstant SC_FREEZINGSP SC_FEARBREEZE SC_ELECTRICSHOCKER SC_WUGDASH SC_WUGBITE SC_CAMOUFLAGE
+syn keyword hConstant SC_ACCELERATION SC_HOVERING SC_SHAPESHIFT SC_INFRAREDSCAN SC_ANALYZE SC_MAGNETICFIELD
+syn keyword hConstant SC_NEUTRALBARRIER SC_NEUTRALBARRIER_MASTER SC_STEALTHFIELD SC_STEALTHFIELD_MASTER SC_OVERHEAT
+syn keyword hConstant SC_OVERHEAT_LIMITPOINT SC_VENOMIMPRESS SC_POISONINGWEAPON SC_WEAPONBLOCKING SC_CLOAKINGEXCEED
+syn keyword hConstant SC_HALLUCINATIONWALK SC_HALLUCINATIONWALK_POSTDELAY SC_ROLLINGCUTTER SC_TOXIN SC_PARALYSE
+syn keyword hConstant SC_VENOMBLEED SC_MAGICMUSHROOM SC_DEATHHURT SC_PYREXIA SC_OBLIVIONCURSE SC_LEECHESEND
+syn keyword hConstant SC_LG_REFLECTDAMAGE SC_FORCEOFVANGUARD SC_SHIELDSPELL_DEF SC_SHIELDSPELL_MDEF SC_SHIELDSPELL_REF
+syn keyword hConstant SC_EXEEDBREAK SC_PRESTIGE SC_BANDING SC_BANDING_DEFENCE SC_EARTHDRIVE SC_INSPIRATION SC_SPELLFIST
+syn keyword hConstant SC_STRIKING SC_WARMER SC_VACUUM_EXTREME SC_PROPERTYWALK SC_SWING SC_SYMPHONY_LOVE
+syn keyword hConstant SC_MOONLIT_SERENADE SC_RUSH_WINDMILL SC_ECHOSONG SC_HARMONIZE SC_SIREN SC_SIRCLEOFNATURE
+syn keyword hConstant SC_GLOOMYDAY SC_GLOOMYDAY_SK SC_SONG_OF_MANA SC_DANCE_WITH_WUG SC_SATURDAY_NIGHT_FEVER
+syn keyword hConstant SC_LERADS_DEW SC_MELODYOFSINK SC_BEYOND_OF_WARCRY SC_UNLIMITED_HUMMING_VOICE SC_SITDOWN_FORCE
+syn keyword hConstant SC_NETHERWORLD SC_CRESCENTELBOW SC_CURSEDCIRCLE_ATKER SC_CURSEDCIRCLE_TARGET SC_LIGHTNINGWALK
+syn keyword hConstant SC_RAISINGDRAGON SC_GENTLETOUCH_ENERGYGAIN SC_GENTLETOUCH_CHANGE SC_GENTLETOUCH_REVITALIZE
+syn keyword hConstant SC_GN_CARTBOOST SC_THORNS_TRAP SC_BLOOD_SUCKER SC_FIRE_EXPANSION_SMOKE_POWDER
+syn keyword hConstant SC_FIRE_EXPANSION_TEAR_GAS SC_MANDRAGORA SC_STOMACHACHE SC_MYSTERIOUS_POWDER SC_MELON_BOMB
+syn keyword hConstant SC_BANANA_BOMB SC_BANANA_BOMB_SITDOWN_POSTDELAY SC_SAVAGE_STEAK SC_COCKTAIL_WARG_BLOOD
+syn keyword hConstant SC_MINOR_BBQ SC_SIROMA_ICE_TEA SC_DROCERA_HERB_STEAMED SC_PUTTI_TAILS_NOODLES SC_BOOST500
+syn keyword hConstant SC_FULL_SWING_K SC_MANA_PLUS SC_MUSTLE_M SC_LIFE_FORCE_F SC_EXTRACT_WHITE_POTION_Z SC_VITATA_500
 syn keyword hConstant SC_EXTRACT_SALAMINE_JUICE SC__REPRODUCE SC__AUTOSHADOWSPELL SC__SHADOWFORM SC__BODYPAINT
 syn keyword hConstant SC__INVISIBILITY SC__DEADLYINFECT SC__ENERVATION SC__GROOMY SC__IGNORANCE SC__LAZINESS
 syn keyword hConstant SC__UNLUCKY SC__WEAKNESS SC__STRIPACCESSARY SC__MANHOLE SC__BLOODYLUST SC_CIRCLE_OF_FIRE
@@ -326,7 +324,9 @@ syn keyword hConstant SC_GRANITIC_ARMOR SC_MAGMA_FLOW SC_PYROCLASTIC SC_NEEDLE_O
 syn keyword hConstant SC_EXTREMITYFIST2 SC_RAID SC_DARKCROW SC_FULL_THROTTLE SC_REBOUND SC_UNLIMIT SC_KINGS_GRACE
 syn keyword hConstant SC_TELEKINESIS_INTENSE SC_OFFERTORIUM SC_FRIGG_SONG SC_ALL_RIDING SC_HANBOK SC_MONSTER_TRANSFORM
 syn keyword hConstant SC_ANGEL_PROTECT SC_ILLUSIONDOPING SC_MTF_ASPD SC_MTF_RANGEATK SC_MTF_MATK SC_MTF_MLEATKED
-syn keyword hConstant SC_MTF_CRIDAMAGE SC_MOONSTAR SC_SUPER_STAR
+syn keyword hConstant SC_MTF_CRIDAMAGE SC_MOONSTAR SC_SUPER_STAR SC_OKTOBERFEST SC_STRANGELIGHTS SC_DECORATION_OF_MUSIC
+syn keyword hConstant SC__MAELSTROM SC__CHAOS SC__FEINTBOMB_MASTER SC_FALLENEMPIRE SC_FLASHCOMBO SC_DEFSET SC_MDEFSET
+syn keyword hConstant SC_NO_SWITCH_EQUIP SC_MTF_MHP SC_MTF_MSP SC_MTF_PUMPKIN SC_MTF_HITFLEE
 syn keyword hConstant e_gasp e_what e_ho e_lv e_swt e_ic e_an e_ag e_cash e_dots e_scissors e_rock e_paper e_korea
 syn keyword hConstant e_lv2 e_thx e_wah e_sry e_heh e_swt2 e_hmm e_no1 e_no e_omg e_oh e_X e_hlp e_go e_sob e_gg e_kis
 syn keyword hConstant e_kis2 e_pif e_ok e_mute e_indonesia e_bzz e_rice e_awsm e_meh e_shy e_pat e_mp e_slur e_com
@@ -338,19 +338,6 @@ syn keyword hConstant PET_CLASS PET_NAME PET_LEVEL PET_HUNGRY PET_INTIMATE
 syn keyword hConstant MOB_NAME MOB_LV MOB_MAXHP MOB_BASEEXP MOB_JOBEXP MOB_ATK1 MOB_ATK2 MOB_DEF MOB_MDEF MOB_STR
 syn keyword hConstant MOB_AGI MOB_VIT MOB_INT MOB_DEX MOB_LUK MOB_RANGE MOB_RANGE2 MOB_RANGE3 MOB_SIZE MOB_RACE
 syn keyword hConstant MOB_ELEMENT MOB_MODE MOB_MVPEXP
-syn keyword hConstant AI_ACTION_TYPE AI_ACTION_TAR_TYPE AI_ACTION_TAR AI_ACTION_SRC AI_ACTION_TAR_TYPE_PC
-syn keyword hConstant AI_ACTION_TAR_TYPE_MOB AI_ACTION_TAR_TYPE_PET AI_ACTION_TAR_TYPE_HOMUN AI_ACTION_TAR_TYPE_ITEM
-syn keyword hConstant AI_ACTION_TYPE_NPCCLICK AI_ACTION_TYPE_ATTACK AI_ACTION_TYPE_DETECT AI_ACTION_TYPE_DEAD
-syn keyword hConstant AI_ACTION_TYPE_ASSIST AI_ACTION_TYPE_KILL AI_ACTION_TYPE_UNLOCK AI_ACTION_TYPE_WALKACK
-syn keyword hConstant AI_ACTION_TYPE_WARPACK
-syn keyword hConstant ALL_CLIENT ALL_SAMEMAP AREA
-syn keyword hConstant AREA_WOS AREA_WOC AREA_WOSC AREA_CHAT_WOC CHAT
-syn keyword hConstant CHAT_WOS PARTY
-syn keyword hConstant PARTY_WOS PARTY_SAMEMAP PARTY_SAMEMAP_WOS PARTY_AREA PARTY_AREA_WOS GUILD
-syn keyword hConstant GUILD_WOS GUILD_SAMEMAP GUILD_SAMEMAP_WOS GUILD_AREA GUILD_AREA_WOS GUILD_NOBG DUEL
-syn keyword hConstant DUEL_WOS
-syn keyword hConstant CHAT_MAINCHAT SELF BG
-syn keyword hConstant BG_WOS BG_SAMEMAP BG_SAMEMAP_WOS BG_AREA BG_AREA_WOS
 syn keyword hConstant ARCH_MERC_GUILD
 syn keyword hConstant SPEAR_MERC_GUILD
 syn keyword hConstant SWORD_MERC_GUILD
@@ -620,7 +607,13 @@ syn keyword hConstant 4_M_FROZEN_GC 4_M_FROZEN_KN 4_SNAKE_LORD 4_F_MOCBOY 4_F_RU
 syn keyword hConstant 4_ENERGY_BLUE 4_ENERGY_YELLOW 4_ENERGY_BLACK 4_ENERGY_WHITE 4_F_PERE01 4_JITTERBUG 4_SEA_OTTER
 syn keyword hConstant 4_GALAPAGO 4_DESERTWOLF_B 4_BB_PORING 4_F_CHARLESTON01 4_F_CHARLESTON02 4_F_CHARLESTON03 4_M_IAN
 syn keyword hConstant 4_M_OLDSCHOLAR 4_F_LAPERM 4_M_DEBON 4_M_BIRMAN 4_F_SHAM 4_M_REBELLION 4_F_REBELLION 4_CHN_SHAOTH
-syn keyword hConstant 4_SHOAL 4_F_SARAH 4_GIGANTES_BIG 4_GIGANTES 4_GIGANTES_SMALL 4_GARGOYLE_STATUE
+syn keyword hConstant 4_SHOAL 4_F_SARAH 4_GIGANTES_BIG 4_GIGANTES 4_GIGANTES_SMALL 4_GARGOYLE_STATUE 4_AIRA 4_EZELLA
+syn keyword hConstant 4_KULUNA 4_LUNE 4_MALLINA 4_MORIN 4_NASARIN 4_F_BERRYTEA 4_F_FRUIT 4_SCR_MT_ROBOTS
+syn keyword hConstant 4_MACHINE_DEVICE 4_GC109 4_SYS_MSG 4_M_TATIO 4_M_REKENBER 4_XMAS_CAT1 4_XMAS_CAT2 4_XMAS_CAT3
+syn keyword hConstant 4_XMAS_CAT4 4_XMAS_CAT5 4_XMAS_CAT6 4_M_DEATH2 4_S_KADOMATSU 4_B_KADOMATSU 4_F_08 4_F_08_STATUE
+syn keyword hConstant 4_M_DARKPRIEST 4_JP_GARM_H 4_JP_MEDUSA_H 4_CHN_GVG_01 4_SPRING_RABBIT 4_PD_TYRA 4_PD_TYRANOS
+syn keyword hConstant 4_PD_PLESI 4_PD_PLESIO 4_PD_BRACHI 4_PD_BRACHIOS 4_PD_GOLDDRAGON 4_PD_ZAEROG 4_PD_TAMADORA
+syn keyword hConstant 4_JP_EDGA_H 4_JP_BRAGOLEM_H 4_EL_AQUA
 syn keyword hConstant MER_LIF MER_AMISTR MER_FILIR MER_VANILMIRTH MER_LIF2 MER_AMISTR2 MER_FILIR2 MER_VANILMIRTH2
 syn keyword hConstant MER_LIF_H MER_AMISTR_H MER_FILIR_H MER_VANILMIRTH_H MER_LIF_H2 MER_AMISTR_H2 MER_FILIR_H2
 syn keyword hConstant MER_VANILMIRTH_H2 MER_ARCHER01 MER_ARCHER02 MER_ARCHER03 MER_ARCHER04 MER_ARCHER05 MER_ARCHER06
@@ -639,6 +632,26 @@ syn keyword hConstant IT_HEALING IT_USABLE IT_ETC IT_WEAPON IT_ARMOR IT_CARD IT_
 syn keyword hConstant IT_DELAYCONSUME IT_CASH
 syn keyword hConstant HQO_OnLogout HQO_OnDeath HQO_OnMapChange
 syn keyword hConstant IOT_NONE IOT_CHAR IOT_PARTY IOT_GUILD false true
+syn keyword hConstant NST_ZENY NST_CASH NST_MARKET NST_CUSTOM
+syn keyword hConstant PC_NAME PC_PARTY PC_GUILD PC_MAP
+syn keyword hConstant SCFLAG_NONE SCFLAG_NOAVOID SCFLAG_FIXEDTICK SCFLAG_LOADED SCFLAG_FIXEDRATE SCFLAG_NOICON
+syn keyword hConstant MOUNT_NONE MOUNT_PECO MOUNT_WUG MOUNT_MADO MOUNT_DRAGON MOUNT_DRAGON_GREEN MOUNT_DRAGON_BROWN
+syn keyword hConstant MOUNT_DRAGON_GRAY MOUNT_DRAGON_BLUE MOUNT_DRAGON_RED PACKETVER
+syn keyword hConstant MAX_LEVEL MAX_STORAGE MAX_GUILD_STORAGE MAX_CART MAX_INVENTORY MAX_ZENY MAX_BG_MEMBERS
+syn keyword hConstant MAX_CHAT_USERS MAX_REFINE
+syn keyword hConstant Option_Nothing Option_Sight Option_Hide Option_Cloak Option_Falcon Option_Riding Option_Invisible
+syn keyword hConstant Option_Orcish Option_Wedding Option_Chasewalk Option_Flying Option_Xmas Option_Transform
+syn keyword hConstant Option_Summer Option_Dragon1 Option_Wug Option_Wugrider Option_Madogear Option_Dragon2
+syn keyword hConstant Option_Dragon3 Option_Dragon4 Option_Dragon5 Option_Hanbok Option_Oktoberfest Option_Dragon
+syn keyword hConstant Option_Costume
+syn keyword hConstant ALL_CLIENT ALL_SAMEMAP AREA
+syn keyword hConstant AREA_WOS AREA_WOC AREA_WOSC AREA_CHAT_WOC CHAT
+syn keyword hConstant CHAT_WOS PARTY
+syn keyword hConstant PARTY_WOS PARTY_SAMEMAP PARTY_SAMEMAP_WOS PARTY_AREA PARTY_AREA_WOS GUILD
+syn keyword hConstant GUILD_WOS GUILD_SAMEMAP GUILD_SAMEMAP_WOS GUILD_AREA GUILD_AREA_WOS GUILD_NOBG DUEL
+syn keyword hConstant DUEL_WOS SELF BG
+syn keyword hConstant BG_WOS BG_SAMEMAP BG_SAMEMAP_WOS BG_AREA BG_AREA_WOS BG_QUEUE RENEWAL
+syn keyword hConstant RENEWAL_CAST RENEWAL_DROP RENEWAL_EXP RENEWAL_LVDMG RENEWAL_EDP RENEWAL_ASPD
 
 " Maps (imported from db/map_index.txt)
 syn match hMapName contained display "\%(alb_ship\|alb2trea\|alberta\|alberta_in\|alde_dun01\|alde_dun02\|alde_dun03\)"
@@ -940,16 +953,16 @@ syn keyword hSkillId GN_WALLOFTHORN GN_CRAZYWEED GN_CRAZYWEED_ATK GN_DEMONIC_FIR
 syn keyword hSkillId GN_FIRE_EXPANSION_SMOKE_POWDE GN_FIRE_EXPANSION_TEAR_GAS GN_FIRE_EXPANSION_ACID GN_HELLS_PLANT
 syn keyword hSkillId GN_HELLS_PLANT_ATK GN_MANDRAGORA GN_SLINGITEM GN_CHANGEMATERIAL GN_MIX_COOKING GN_MAKEBOMB
 syn keyword hSkillId GN_S_PHARMACY GN_SLINGITEM_RANGEMELEEATK AB_SECRAMENT WM_SEVERE_RAINSTORM_MELEE SR_HOWLINGOFLION
-syn keyword hSkillId SR_RIDEINLIGHTNING RETURN_TO_ELDICASTES ALL_BUYING_STORE ALL_GUARDIAN_RECALL ALL_ODINS_POWER
-syn keyword hSkillId KO_YAMIKUMO KO_RIGHT KO_LEFT KO_JYUMONJIKIRI KO_SETSUDAN KO_BAKURETSU KO_HAPPOKUNAI KO_MUCHANAGE
-syn keyword hSkillId KO_HUUMARANKA KO_MAKIBISHI KO_MEIKYOUSISUI KO_ZANZOU KO_KYOUGAKU KO_JYUSATSU KO_KAHU_ENTEN
-syn keyword hSkillId KO_HYOUHU_HUBUKI KO_KAZEHU_SEIRAN KO_DOHU_KOUKAI KO_KAIHOU KO_ZENKAI KO_GENWAKU KO_IZAYOI
-syn keyword hSkillId KG_KAGEHUMI KG_KYOMU KG_KAGEMUSYA OB_ZANGETSU OB_OBOROGENSOU OB_OBOROGENSOU_TRANSITION_ATK
-syn keyword hSkillId OB_AKAITSUKI ECL_SNOWFLIP ECL_PEONYMAMY ECL_SADAGUI ECL_SEQUOIADUST ECLAGE_RECALL GC_DARKCROW
-syn keyword hSkillId RA_UNLIMIT GN_ILLUSIONDOPING RK_DRAGONBREATH_WATER RK_LUXANIMA NC_MAGMA_ERUPTION WM_FRIGG_SONG
-syn keyword hSkillId SO_ELEMENTAL_SHIELD SR_FLASHCOMBO SC_ESCAPE AB_OFFERTORIUM WL_TELEKINESIS_INTENSE LG_KINGS_GRACE
-syn keyword hSkillId ALL_FULL_THROTTLE SR_FLASHCOMBO_ATK_STEP1 SR_FLASHCOMBO_ATK_STEP2 SR_FLASHCOMBO_ATK_STEP3
-syn keyword hSkillId SR_FLASHCOMBO_ATK_STEP4
+syn keyword hSkillId SR_RIDEINLIGHTNING LG_OVERBRAND_BRANDISH RETURN_TO_ELDICASTES ALL_BUYING_STORE ALL_GUARDIAN_RECALL
+syn keyword hSkillId ALL_ODINS_POWER KO_YAMIKUMO KO_RIGHT KO_LEFT KO_JYUMONJIKIRI KO_SETSUDAN KO_BAKURETSU
+syn keyword hSkillId KO_HAPPOKUNAI KO_MUCHANAGE KO_HUUMARANKA KO_MAKIBISHI KO_MEIKYOUSISUI KO_ZANZOU KO_KYOUGAKU
+syn keyword hSkillId KO_JYUSATSU KO_KAHU_ENTEN KO_HYOUHU_HUBUKI KO_KAZEHU_SEIRAN KO_DOHU_KOUKAI KO_KAIHOU KO_ZENKAI
+syn keyword hSkillId KO_GENWAKU KO_IZAYOI KG_KAGEHUMI KG_KYOMU KG_KAGEMUSYA OB_ZANGETSU OB_OBOROGENSOU
+syn keyword hSkillId OB_OBOROGENSOU_TRANSITION_ATK OB_AKAITSUKI ECL_SNOWFLIP ECL_PEONYMAMY ECL_SADAGUI ECL_SEQUOIADUST
+syn keyword hSkillId ECLAGE_RECALL GC_DARKCROW RA_UNLIMIT GN_ILLUSIONDOPING RK_DRAGONBREATH_WATER RK_LUXANIMA
+syn keyword hSkillId NC_MAGMA_ERUPTION WM_FRIGG_SONG SO_ELEMENTAL_SHIELD SR_FLASHCOMBO SC_ESCAPE AB_OFFERTORIUM
+syn keyword hSkillId WL_TELEKINESIS_INTENSE LG_KINGS_GRACE ALL_FULL_THROTTLE SR_FLASHCOMBO_ATK_STEP1
+syn keyword hSkillId SR_FLASHCOMBO_ATK_STEP2 SR_FLASHCOMBO_ATK_STEP3 SR_FLASHCOMBO_ATK_STEP4
 
 " Mobs (imported from db/*/mob_db.txt)
 syn keyword hMobId SCORPION PORING HORNET FARMILIAR FABRE PUPA CONDOR WILOW CHONCHON RODA_FROG WOLF SPORE ZOMBIE
@@ -1062,7 +1075,7 @@ syn keyword hMobId G_TATACHO G_HILLSRION CENTIPEDE_LARVA WOOMAWANG WOOMAWANG_ G_
 syn keyword hMobId AQUA_ELEMENTAL RATA DUNEYRR ANCIENT_TREE RHYNCHO PHYLLA S_NYDHOG DARK_SHADOW BRADIUM_GOLEM
 syn keyword hMobId DANDELION_ G_DARK_SHADOW HIDEN_PRIEST DANDELION_H SILVERSNIPER MAGICDECOY_FIRE MAGICDECOY_WATER
 syn keyword hMobId MAGICDECOY_EARTH MAGICDECOY_WIND W_NAGA W_BRADIUM_GOLEM E_CRAMP BOITATA IARA PIRANHA HEADLESS_MULE
-syn keyword hMobId JAGUAR TOUCAN CURUPIRA S_WIND_GHOST S_SKOGUL S_SUCCUBUS E_HYDRA G_PIRANHA KO_ZANZOU
+syn keyword hMobId JAGUAR TOUCAN CURUPIRA S_WIND_GHOST S_SKOGUL S_SUCCUBUS E_HYDRA G_PIRANHA KO_KAGE
 
 " Items (imported from db/*/item_db.conf)
 syn keyword hItemId Red_Potion Orange_Potion Yellow_Potion White_Potion Blue_Potion Green_Potion Red_Herb Yellow_Herb
@@ -1786,40 +1799,40 @@ syn keyword hItemId Tenkaippin_Strong Tenkaippin_Clean Mysterious_Seed Bubble_Gu
 syn keyword hItemId Cheer_Scarf_Box Cheer_Scarf2_Box Cheer_Scarf3_Box Cheer_Scarf4_Box Cheer_Scarf6_Box
 syn keyword hItemId Cheer_Scarf8_Box Cheer_Scarf10_Box Cheer_Scarf10_Box2 Fruit_Basket Mora_Berry Arrow_Of_Elf_Cntr
 syn keyword hItemId Hunting_Arrow_Cntr Lucky_Egg_C6 Rapid_Life_Water Ring_Of_Valkyrie_Box Vending_Search_Scroll
-syn keyword hItemId Vending_Search_Scroll2 Uni_Catalog_Bz Old_Blue_Box_F Old_Bleu_Box Holy_Egg_2 Elixir_Of_Life
-syn keyword hItemId Noble_Nameplate Lucky_Cookie01 Lucky_Cookie02 Lucky_Cookie03 Guyak_Candy Guyak_Pudding Pretzel
-syn keyword hItemId Green_Beer Monster_Extract Easter_Scroll Black_Treasure_Box Indian_Rice_Cake Poison_Paralysis
-syn keyword hItemId Poison_Leech Poison_Oblivion Poison_Contamination Poison_Numb Poison_Fever Poison_Laughing
-syn keyword hItemId Poison_Fatigue Runstone_Nosiege Runstone_Rhydo Runstone_Verkana Runstone_Isia Runstone_Asir
-syn keyword hItemId Runstone_Urj Runstone_Turisus Runstone_Pertz Runstone_Hagalas Runstone_Quality Runstone_Ancient
-syn keyword hItemId Runstone_Mystic Runstone_Ordinary Runstone_Rare Snow_Flower Inc_Str_Scroll Inc_Int_Scroll
-syn keyword hItemId Valentine_Gift_Box1 Valentine_Gift_Box2 Chocotate_Box Skull_Scroll Destruction_Scroll Royal_Scroll
-syn keyword hItemId Immune_Scroll Mystic_Scroll Battle_Scroll Armor_Scroll Prayer_Scroll Soul_Scroll New_Year_Bun
-syn keyword hItemId Traditional_Firecrack New_Gift_Envelope Loyal_Ring1_Box Loyal_Ring2_Box Loyal_Ring3_Box
-syn keyword hItemId Bubble_Gum_Green Bubble_Gum_Yellow Bubble_Gum_Orange Bubble_Gum_Red Fools_Day_Box_Tw
-syn keyword hItemId Summer_Knight_Box Reward_Job_BM25 Passion_FB_Hat_Box Cool_FB_Hat_Box Victory_FB_Hat_Box
-syn keyword hItemId Glory_FB_Hat_Box Passion_Hat_Box2 Cool_Hat_Box2 Victory_Hat_Box2 Change_Slot_Card Change_Name_Card
-syn keyword hItemId Falcon_Flute Battle_Manual_Box Insurance_Package Bubble_Gum_Box Str_Dish_Box Agi_Dish_Box
-syn keyword hItemId Int_Dish_Box Dex_Dish_Box Luk_Dish_Box Vit_Dish_Box Kafra_Card_Box Giant_Fly_Wing_Box
-syn keyword hItemId Neuralizer_Box Convex_Mirror_Box Blessing_10_Scroll_Box Inc_Agi_10_Scroll_Box Aspersio_5_Scroll_Box
-syn keyword hItemId Assumptio_5_Scroll_Box Wind_Walk_10_Scroll_Box Adrenaline_Scroll_Box Megaphone_Box
-syn keyword hItemId Enriched_Elunium_Box Enriched_Oridecon_Box Token_Of_Siegfried_Box Pet_Egg_Scroll_Box1
-syn keyword hItemId Pet_Egg_Scroll_Box2 Pet_Egg_Scroll1 Pet_Egg_Scroll2 J_Aspersio_5_Scroll_Box J_Aspersio_5_Scroll
-syn keyword hItemId Pet_Egg_Scroll_Box3 Pet_Egg_Scroll_Box4 Pet_Egg_Scroll_Box5 Pet_Egg_Scroll3 Pet_Egg_Scroll4
-syn keyword hItemId Pet_Egg_Scroll5 Infiltrator_Box Muramasa_Box Excalibur_Box Combat_Knife_Box Counter_Dagger_Box
-syn keyword hItemId Kaiser_Knuckle_Box Pole_Axe_Box Mighty_Staff_Box Right_Epsilon_Box Balistar_Box
-syn keyword hItemId Diary_Of_Great_Sage_Box Asura_Box Apple_Of_Archer_Box Bunny_Band_Box Sahkkat_Box Lord_Circlet_Box
-syn keyword hItemId Elven_Ears_Box Steel_Flower_Box Critical_Ring_Box Earring_Box Ring_Box Necklace_Box Glove_Box
-syn keyword hItemId Brooch_Box Rosary_Box Safety_Ring_Box Vesper_Core01_Box Vesper_Core02_Box Vesper_Core03_Box
-syn keyword hItemId Vesper_Core04_Box Emergency_Box1 Emergency_Box2 Emergency_Box3 Emergency_Scroll1 Emergency_Scroll2
-syn keyword hItemId Emergency_Scroll3 Teleport_Box1 Teleport_Box2 Teleport_Box3 Teleport_Box4 Teleport_Box5
-syn keyword hItemId Teleport_Box6 Teleport_Scroll1 Teleport_Scroll2 Teleport_Scroll3 Teleport_Scroll4 Teleport_Scroll5
-syn keyword hItemId Teleport_Scroll6 Pet_Egg_Scroll_Box6 Pet_Egg_Scroll_Box7 Pet_Egg_Scroll_Box8 Pet_Egg_Scroll_Box9
-syn keyword hItemId Pet_Egg_Scroll_Box10 Pet_Egg_Scroll_Box11 Pet_Egg_Scroll6 Pet_Egg_Scroll7 Pet_Egg_Scroll8
-syn keyword hItemId Pet_Egg_Scroll9 Pet_Egg_Scroll10 Pet_Egg_Scroll11 White_Herb_Box Blue_Herb_Box Elunium_Box
-syn keyword hItemId Oridecon_Box Branch_Of_Dead_Tree_Box Jujube_Dagger Dragon_Killer Ginnungagap Coward Coward_
-syn keyword hItemId Angelwing_Short_Sword Khukri Jitte Jitte_ Kamaitachi Asura Asura_ Murasame Murasame_ Hakujin
-syn keyword hItemId Hakujin_ Poison_Knife_ House_Auger_ Sucsamad_ Ginnungagap_ Warrior_Balmung_ Combat_Knife_C
+syn keyword hItemId Vending_Search_Scroll2 Uni_Catalog_Bz Old_Ore_Box Old_Blue_Box_F Old_Bleu_Box Holy_Egg_2
+syn keyword hItemId Elixir_Of_Life Noble_Nameplate Lucky_Cookie01 Lucky_Cookie02 Lucky_Cookie03 Guyak_Candy
+syn keyword hItemId Guyak_Pudding Pretzel Green_Beer Monster_Extract Easter_Scroll Black_Treasure_Box Indian_Rice_Cake
+syn keyword hItemId Poison_Paralysis Poison_Leech Poison_Oblivion Poison_Contamination Poison_Numb Poison_Fever
+syn keyword hItemId Poison_Laughing Poison_Fatigue Runstone_Nosiege Runstone_Rhydo Runstone_Verkana Runstone_Isia
+syn keyword hItemId Runstone_Asir Runstone_Urj Runstone_Turisus Runstone_Pertz Runstone_Hagalas Runstone_Quality
+syn keyword hItemId Runstone_Ancient Runstone_Mystic Runstone_Ordinary Runstone_Rare Snow_Flower Inc_Str_Scroll
+syn keyword hItemId Inc_Int_Scroll Valentine_Gift_Box1 Valentine_Gift_Box2 Chocotate_Box Skull_Scroll
+syn keyword hItemId Destruction_Scroll Royal_Scroll Immune_Scroll Mystic_Scroll Battle_Scroll Armor_Scroll
+syn keyword hItemId Prayer_Scroll Soul_Scroll New_Year_Bun Traditional_Firecrack New_Gift_Envelope Loyal_Ring1_Box
+syn keyword hItemId Loyal_Ring2_Box Loyal_Ring3_Box Bubble_Gum_Green Bubble_Gum_Yellow Bubble_Gum_Orange Bubble_Gum_Red
+syn keyword hItemId Fools_Day_Box_Tw Summer_Knight_Box Reward_Job_BM25 Passion_FB_Hat_Box Cool_FB_Hat_Box
+syn keyword hItemId Victory_FB_Hat_Box Glory_FB_Hat_Box Passion_Hat_Box2 Cool_Hat_Box2 Victory_Hat_Box2
+syn keyword hItemId Change_Slot_Card Change_Name_Card Potion_Box Falcon_Flute Battle_Manual_Box Insurance_Package
+syn keyword hItemId Bubble_Gum_Box Str_Dish_Box Agi_Dish_Box Int_Dish_Box Dex_Dish_Box Luk_Dish_Box Vit_Dish_Box
+syn keyword hItemId Kafra_Card_Box Giant_Fly_Wing_Box Neuralizer_Box Convex_Mirror_Box Blessing_10_Scroll_Box
+syn keyword hItemId Inc_Agi_10_Scroll_Box Aspersio_5_Scroll_Box Assumptio_5_Scroll_Box Wind_Walk_10_Scroll_Box
+syn keyword hItemId Adrenaline_Scroll_Box Megaphone_Box Enriched_Elunium_Box Enriched_Oridecon_Box
+syn keyword hItemId Token_Of_Siegfried_Box Pet_Egg_Scroll_Box1 Pet_Egg_Scroll_Box2 Pet_Egg_Scroll1 Pet_Egg_Scroll2
+syn keyword hItemId J_Aspersio_5_Scroll_Box J_Aspersio_5_Scroll Pet_Egg_Scroll_Box3 Pet_Egg_Scroll_Box4
+syn keyword hItemId Pet_Egg_Scroll_Box5 Pet_Egg_Scroll3 Pet_Egg_Scroll4 Pet_Egg_Scroll5 Infiltrator_Box Muramasa_Box
+syn keyword hItemId Excalibur_Box Combat_Knife_Box Counter_Dagger_Box Kaiser_Knuckle_Box Pole_Axe_Box Mighty_Staff_Box
+syn keyword hItemId Right_Epsilon_Box Balistar_Box Diary_Of_Great_Sage_Box Asura_Box Apple_Of_Archer_Box Bunny_Band_Box
+syn keyword hItemId Sahkkat_Box Lord_Circlet_Box Elven_Ears_Box Steel_Flower_Box Critical_Ring_Box Earring_Box Ring_Box
+syn keyword hItemId Necklace_Box Glove_Box Brooch_Box Rosary_Box Safety_Ring_Box Vesper_Core01_Box Vesper_Core02_Box
+syn keyword hItemId Vesper_Core03_Box Vesper_Core04_Box Emergency_Box1 Emergency_Box2 Emergency_Box3 Emergency_Scroll1
+syn keyword hItemId Emergency_Scroll2 Emergency_Scroll3 Teleport_Box1 Teleport_Box2 Teleport_Box3 Teleport_Box4
+syn keyword hItemId Teleport_Box5 Teleport_Box6 Teleport_Scroll1 Teleport_Scroll2 Teleport_Scroll3 Teleport_Scroll4
+syn keyword hItemId Teleport_Scroll5 Teleport_Scroll6 Pet_Egg_Scroll_Box6 Pet_Egg_Scroll_Box7 Pet_Egg_Scroll_Box8
+syn keyword hItemId Pet_Egg_Scroll_Box9 Pet_Egg_Scroll_Box10 Pet_Egg_Scroll_Box11 Pet_Egg_Scroll6 Pet_Egg_Scroll7
+syn keyword hItemId Pet_Egg_Scroll8 Pet_Egg_Scroll9 Pet_Egg_Scroll10 Pet_Egg_Scroll11 White_Herb_Box Blue_Herb_Box
+syn keyword hItemId Elunium_Box Oridecon_Box Branch_Of_Dead_Tree_Box Jujube_Dagger Dragon_Killer Ginnungagap Coward
+syn keyword hItemId Coward_ Angelwing_Short_Sword Khukri Jitte Jitte_ Kamaitachi Asura Asura_ Murasame Murasame_
+syn keyword hItemId Hakujin Hakujin_ Poison_Knife_ House_Auger_ Sucsamad_ Ginnungagap_ Warrior_Balmung_ Combat_Knife_C
 syn keyword hItemId Counter_Dagger_C Asura_C Sword_Breaker_C Mail_Breaker_C Moonlight_Sword_C Scalpel Tooth_Blade
 syn keyword hItemId Prinsence_Knife Dragon_Killer_ Sword_Breaker_ Mail_Breaker_ Assasin_Dagger_ Twilight_Desert
 syn keyword hItemId Sandstorm BF_Dagger1 BF_Dagger2 Dagger_Of_Hunter Ivory_Knife N_Cutter N_Main_Gauche Krieger_Dagger1
@@ -2030,63 +2043,66 @@ syn keyword hItemId F_Bow_Of_Rudra_C E_Bow_Of_Rudra_C Cheer_Scarf6 Cheer_Scarf8 
 syn keyword hItemId Umbala_Spirit Hattah_Black Elven_Ears_ Skull_Cap Horn_Of_Ancient Sprout_Hat Mercury_Helm
 syn keyword hItemId Cat_Ears_Beret White_Musang_Hat Black_Musang_Hat Heart_Eyepatch Wit_Pumpkin_Hat T_Mr_Smile
 syn keyword hItemId T_Spinx_Helm T_Sunglasses T_Cigarette T_Valkyrie_Feather_Band Clear_Sun Runstone_Luxanima
+syn keyword hItemId Buff_Gift_Set Integer_Time
 
 " Script Commands (imported from src/map/script.c)
 syn keyword hCommand jobchange jobname warp areawarp warpchar warpparty warpguild setlook changelook getitem rentitem
 syn keyword hCommand getitem2 getnameditem groupranditem makeitem delitem delitem2 enable_items disable_items cutin
 syn keyword hCommand viewpoint heal itemheal percentheal rand countitem countitem2 checkweight checkweight2 readparam
 syn keyword hCommand getcharid getnpcid getpartyname getpartymember getpartyleader getguildname getguildmaster
-syn keyword hCommand getguildmasterid strcharinfo strnpcinfo getequipid getequipname getbrokenid repair repairall
-syn keyword hCommand getequipisequiped getequipisenableref getequipisidentify getequiprefinerycnt getequipweaponlv
-syn keyword hCommand getequippercentrefinery successrefitem failedrefitem downrefitem statusup statusup2 bonus bonus2
-syn keyword hCommand bonus3 bonus4 bonus5 autobonus autobonus2 autobonus3 skill addtoskill guildskill getskilllv
-syn keyword hCommand getgdskilllv basicskillcheck getgmlevel getgroupid checkoption setoption setcart checkcart
-syn keyword hCommand setfalcon checkfalcon setriding checkriding checkwug checkmadogear setmadogear save savepoint
-syn keyword hCommand gettimetick gettime gettimestr openstorage guildopenstorage itemskill produce cooking monster
-syn keyword hCommand getmobdrops areamonster killmonster killmonsterall clone doevent donpcevent cmdothernpc addtimer
-syn keyword hCommand deltimer addtimercount initnpctimer stopnpctimer startnpctimer setnpctimer getnpctimer
-syn keyword hCommand attachnpctimer detachnpctimer playerattached announce mapannounce areaannounce getusers
-syn keyword hCommand getmapguildusers getmapusers getareausers getareadropitem enablenpc disablenpc hideoffnpc
+syn keyword hCommand getguildmasterid getguildmember strcharinfo strnpcinfo charid2rid getequipid getequipname
+syn keyword hCommand getbrokenid getbrokencount repair repairall getequipisequiped getequipisenableref
+syn keyword hCommand getequipisidentify getequiprefinerycnt getequipweaponlv getequippercentrefinery successrefitem
+syn keyword hCommand failedrefitem downrefitem statusup statusup2 bonus bonus2 bonus3 bonus4 bonus5 autobonus
+syn keyword hCommand autobonus2 autobonus3 skill addtoskill guildskill getskilllv getgdskilllv basicskillcheck
+syn keyword hCommand getgmlevel getgroupid checkoption setoption setcart checkcart setfalcon checkfalcon setmount
+syn keyword hCommand checkmount checkwug savepoint gettimetick gettime gettimestr openstorage guildopenstorage
+syn keyword hCommand itemskill produce cooking monster getmobdrops areamonster killmonster killmonsterall clone doevent
+syn keyword hCommand donpcevent addtimer deltimer addtimercount initnpctimer stopnpctimer startnpctimer setnpctimer
+syn keyword hCommand getnpctimer attachnpctimer detachnpctimer playerattached announce mapannounce areaannounce
+syn keyword hCommand getusers getmapguildusers getmapusers getareausers getareadropitem enablenpc disablenpc hideoffnpc
 syn keyword hCommand hideonnpc sc_start sc_start2 sc_start4 sc_end getstatus getscrate debugmes pet bpet resetlvl
-syn keyword hCommand resetstatus resetskill skillpointcount changebase changesex waitingroom delwaitingroom
-syn keyword hCommand kickwaitingroomall enablewaitingroomevent disablewaitingroomevent enablearena disablearena
+syn keyword hCommand resetstatus resetskill skillpointcount changebase changesex changecharsex waitingroom
+syn keyword hCommand delwaitingroom kickwaitingroomall enablewaitingroomevent disablewaitingroomevent
 syn keyword hCommand getwaitingroomstate warpwaitingpc attachrid detachrid isloggedin setmapflagnosave getmapflag
 syn keyword hCommand setmapflag removemapflag pvpon pvpoff gvgon gvgoff emotion maprespawnguildid agitstart agitend
 syn keyword hCommand agitcheck flagemblem getcastlename getcastledata setcastledata requestguildinfo getequipcardcnt
 syn keyword hCommand successremovecards failedremovecards marriage wedding divorce ispartneron getpartnerid getchildid
 syn keyword hCommand getmotherid getfatherid warppartner getitemname getitemslots makepet getexp getinventorylist
-syn keyword hCommand getskilllist clearitem classchange misceffect playbgm playbgmall soundeffect soundeffectall
-syn keyword hCommand strmobinfo guardian guardianinfo petskillbonus petrecovery petloot petheal petskillattack
-syn keyword hCommand petskillattack2 petskillsupport skilleffect npcskilleffect specialeffect specialeffect2 nude
-syn keyword hCommand mapwarp atcommand charcommand movenpc message npctalk mobcount getlook getsavepoint npcspeed
-syn keyword hCommand npcwalkto npcstop getmapxy checkoption1 checkoption2 guildgetexp guildchangegm logmes summon
-syn keyword hCommand isnight isday isequipped isequippedcnt cardscnt getrefine night day defpattern activatepset
-syn keyword hCommand deactivatepset deletepset dispbottom getusersname recovery getpetinfo gethominfo getmercinfo
-syn keyword hCommand checkequipedcard globalmes unequip getstrlen charisalpha charat setchar insertchar delchar
-syn keyword hCommand strtoupper strtolower charisupper charislower substr explode implode sprintf sscanf strpos
-syn keyword hCommand replacestr countstr setnpcdisplay compare getiteminfo setiteminfo getequipcardid sqrt pow distance
-syn keyword hCommand md5 petstat callshop npcshopitem npcshopadditem npcshopdelitem npcshopattach equip autoequip
-syn keyword hCommand setbattleflag getbattleflag setitemscript disguise undisguise getmonsterinfo addmonsterdrop
-syn keyword hCommand delmonsterdrop axtoi query_sql query_logsql escape_sql atoi rid2name pcfollow pcstopfollow
-syn keyword hCommand pcblockmove unitwalk unitkill unitwarp unitattack unitstop unittalk unitemote unitskilluseid
-syn keyword hCommand unitskillusepos getvariableofnpc warpportal homevolution hommutate morphembryo checkhomcall
-syn keyword hCommand homshuffle eaclass roclass checkvending checkchatting checkidle openmail openauction checkcell
-syn keyword hCommand setcell setwall delwall searchitem mercenary_create mercenary_heal mercenary_sc_start
-syn keyword hCommand mercenary_get_calls mercenary_get_faith mercenary_set_calls mercenary_set_faith readbook setfont
-syn keyword hCommand areamobuseskill progressbar pushpc buyingstore searchstores showdigit agitstart2 agitend2
-syn keyword hCommand agitcheck2 waitingroom2bg waitingroom2bg_single bg_team_setxy bg_warp bg_monster
-syn keyword hCommand bg_monster_set_team bg_leave bg_destroy areapercentheal bg_get_data bg_getareausers bg_updatescore
-syn keyword hCommand instance_create instance_destroy instance_attachmap instance_detachmap instance_attach instance_id
-syn keyword hCommand instance_set_timeout instance_init instance_announce instance_npcname has_instance
-syn keyword hCommand instance_warpall instance_check_party instance_mapname instance_set_respawn makerune checkdragon
-syn keyword hCommand setdragon ismounting setmounting checkre getargcount getcharip is_function get_revision freeloop
-syn keyword hCommand getrandgroupitem cleanmap cleanarea npcskill itemeffect consumeitem delequip bindatcmd unbindatcmd
-syn keyword hCommand useatcmd getitembound getitembound2 countbound questinfo setquest erasequest completequest
-syn keyword hCommand checkquest changequest showevent queue queuesize queueadd queueremove queueopt queuedel
-syn keyword hCommand queueiterator qicheck qiget qiclear packageitem sit stand issit montransform bg_create_team
-syn keyword hCommand bg_join_team bg_match_over
+syn keyword hCommand getcartinventorylist getskilllist clearitem classchange misceffect playbgm playbgmall soundeffect
+syn keyword hCommand soundeffectall strmobinfo guardian guardianinfo petskillbonus petrecovery petloot petskillattack
+syn keyword hCommand petskillsupport skilleffect npcskilleffect specialeffect specialeffect2 nude mapwarp atcommand
+syn keyword hCommand charcommand movenpc message npctalk mobcount getlook getsavepoint npcspeed npcwalkto npcstop
+syn keyword hCommand setnpcdistance getnpcdir setnpcdir getnpcclass getmapxy checkoption1 checkoption2 guildgetexp
+syn keyword hCommand guildchangegm logmes summon isnight isequipped isequippedcnt cardscnt getrefine night day
+syn keyword hCommand defpattern activatepset deactivatepset deletepset pcre_match dispbottom getusersname recovery
+syn keyword hCommand getpetinfo gethominfo getmercinfo checkequipedcard globalmes unequip getstrlen charisalpha charat
+syn keyword hCommand setchar insertchar delchar strtoupper strtolower charisupper charislower substr explode implode
+syn keyword hCommand sprintf sscanf strpos replacestr countstr setnpcdisplay compare strcmp getiteminfo setiteminfo
+syn keyword hCommand getequipcardid log10 sqrt pow distance min max md5 petstat callshop npcshopitem npcshopadditem
+syn keyword hCommand npcshopdelitem npcshopattach equip autoequip equip2 setbattleflag getbattleflag setitemscript
+syn keyword hCommand disguise undisguise getmonsterinfo addmonsterdrop delmonsterdrop axtoi query_sql query_logsql
+syn keyword hCommand escape_sql atoi strtol rid2name pcfollow pcstopfollow pcblockmove unitwalk unitkill unitwarp
+syn keyword hCommand unitattack unitstop unittalk unitemote unitskilluseid unitskillusepos getvariableofnpc warpportal
+syn keyword hCommand homevolution hommutate morphembryo checkhomcall homshuffle eaclass roclass checkvending
+syn keyword hCommand checkchatting checkidle openmail openauction checkcell setcell setwall delwall searchitem
+syn keyword hCommand mercenary_create mercenary_heal mercenary_sc_start mercenary_get_calls mercenary_get_faith
+syn keyword hCommand mercenary_set_calls mercenary_set_faith readbook setfont areamobuseskill progressbar pushpc
+syn keyword hCommand buyingstore searchstores showdigit agitstart2 agitend2 agitcheck2 waitingroom2bg
+syn keyword hCommand waitingroom2bg_single bg_team_setxy bg_warp bg_monster bg_monster_set_team bg_leave bg_destroy
+syn keyword hCommand areapercentheal bg_get_data bg_getareausers bg_updatescore instance_create instance_destroy
+syn keyword hCommand instance_attachmap instance_detachmap instance_attach instance_id instance_set_timeout
+syn keyword hCommand instance_init instance_announce instance_npcname has_instance instance_warpall
+syn keyword hCommand instance_check_party instance_check_guild instance_mapname instance_set_respawn has_instance2
+syn keyword hCommand makerune hascashmount setcashmount getargcount getcharip is_function freeloop getrandgroupitem
+syn keyword hCommand cleanmap cleanarea npcskill itemeffect consumeitem delequip bindatcmd unbindatcmd useatcmd
+syn keyword hCommand getitembound getitembound2 countbound checkbound questinfo setquest erasequest completequest
+syn keyword hCommand questprogress questactive changequest showevent queue queuesize queueadd queueremove queueopt
+syn keyword hCommand queuedel queueiterator qicheck qiget qiclear packageitem sit stand issit montransform
+syn keyword hCommand bg_create_team bg_join_team bg_match_over openshop sellitem stopselling setcurrency tradertype
+syn keyword hCommand purchaseok shopcount channelmes showscript mergeitem _
 syn keyword hKeyword end close close2 next return callfunc callsub
-syn keyword hDeprecated menu goto set setr jump_zero
+syn keyword hDeprecated menu goto set
 syn keyword hStatement mes select prompt getarg input setarray cleararray copyarray getarraysize deletearray
 syn keyword hStatement getelementofarray getd setd sleep sleep2 awake
 
@@ -2132,6 +2148,8 @@ syn match	hDefaultLabel	display "OnTouchNPC:"me=e-1 contained
 syn match	hDefaultLabel	display "On\%(Buy\|Sell\)Item:"me=e-1 contained
 " npc_timerevent_export
 syn match	hDefaultLabel	display "OnTimer[0-9]\+:"me=e-1 contained
+" npc_trader_*
+syn match	hDefaultLabel	display "On\%(Count\|Pay\)Funds:"me=e-1 contained
 " BUILDIN(cmdothernpc)
 syn match	hDefaultLabel	display "OnCommand\i\+:"me=e-1 contained
 " script_defaults
