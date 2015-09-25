@@ -215,7 +215,7 @@ static int add_path(struct node_heap *heap, int16 x, int16 y, int g_cost, struct
  * flag: &1 = easy path search only
  * cell: type of obstruction to check for
  *------------------------------------------*/
-static bool path_search_navi(struct walkpath_data_navi *wpd, int16 m, int16 x0, int16 y0, int16 x1, int16 y1, cell_chk cell)
+static bool path_search_navi(struct walkpath_data_navi *wpd, struct block_list *bl, int16 m, int16 x0, int16 y0, int16 x1, int16 y1, cell_chk cell)
 {
 	register int i, j, x, y, dx, dy;
 	struct map_data *md;
@@ -229,11 +229,11 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, int16 m, int16 x0, 
 	md = &map->list[m];
 
 	//Do not check starting cell as that would get you stuck.
-	if (x0 < 0 || x0 >= md->xs || y0 < 0 || y0 >= md->ys /*|| md->getcellp(md,x0,y0,cell)*/)
+	if (x0 < 0 || x0 >= md->xs || y0 < 0 || y0 >= md->ys /*|| md->getcellp(md, bl, x0, y0, cell)*/)
 		return false;
 
 	// Check destination cell
-	if (x1 < 0 || x1 >= md->xs || y1 < 0 || y1 >= md->ys || md->getcellp(md,x1,y1,cell))
+	if (x1 < 0 || x1 >= md->xs || y1 < 0 || y1 >= md->ys || md->getcellp(md, bl, x1, y1, cell))
 		return false;
 
 	if( x0 == x1 && y0 == y1 ) {
@@ -302,26 +302,26 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, int16 m, int16 x0, 
 				break;
 			}
 
-			if (y < ys && !md->getcellp(md, x, y+1, cell)) allowed_dirs |= DIR_NORTH;
-			if (y >  0 && !md->getcellp(md, x, y-1, cell)) allowed_dirs |= DIR_SOUTH;
-			if (x < xs && !md->getcellp(md, x+1, y, cell)) allowed_dirs |= DIR_EAST;
-			if (x >  0 && !md->getcellp(md, x-1, y, cell)) allowed_dirs |= DIR_WEST;
+			if (y < ys && !md->getcellp(md, bl, x, y+1, cell)) allowed_dirs |= DIR_NORTH;
+			if (y >  0 && !md->getcellp(md, bl, x, y-1, cell)) allowed_dirs |= DIR_SOUTH;
+			if (x < xs && !md->getcellp(md, bl, x+1, y, cell)) allowed_dirs |= DIR_EAST;
+			if (x >  0 && !md->getcellp(md, bl, x-1, y, cell)) allowed_dirs |= DIR_WEST;
 
 #define chk_dir(d) ((allowed_dirs & (d)) == (d))
 			// Process neighbors of current node
-			if (chk_dir(DIR_SOUTH|DIR_EAST) && !md->getcellp(md, x+1, y-1, cell))
+			if (chk_dir(DIR_SOUTH|DIR_EAST) && !md->getcellp(md, bl, x+1, y-1, cell))
 				e += add_path(&open_set, x+1, y-1, g_cost + MOVE_DIAGONAL_COST, current, heuristic(x+1, y-1, x1, y1)); // (x+1, y-1) 5
 			if (chk_dir(DIR_EAST))
 				e += add_path(&open_set, x+1, y, g_cost + MOVE_COST, current, heuristic(x+1, y, x1, y1)); // (x+1, y) 6
-			if (chk_dir(DIR_NORTH|DIR_EAST) && !md->getcellp(md, x+1, y+1, cell))
+			if (chk_dir(DIR_NORTH|DIR_EAST) && !md->getcellp(md, bl, x+1, y+1, cell))
 				e += add_path(&open_set, x+1, y+1, g_cost + MOVE_DIAGONAL_COST, current, heuristic(x+1, y+1, x1, y1)); // (x+1, y+1) 7
 			if (chk_dir(DIR_NORTH))
 				e += add_path(&open_set, x, y+1, g_cost + MOVE_COST, current, heuristic(x, y+1, x1, y1)); // (x, y+1) 0
-			if (chk_dir(DIR_NORTH|DIR_WEST) && !md->getcellp(md, x-1, y+1, cell))
+			if (chk_dir(DIR_NORTH|DIR_WEST) && !md->getcellp(md, bl, x-1, y+1, cell))
 				e += add_path(&open_set, x-1, y+1, g_cost + MOVE_DIAGONAL_COST, current, heuristic(x-1, y+1, x1, y1)); // (x-1, y+1) 1
 			if (chk_dir(DIR_WEST))
 				e += add_path(&open_set, x-1, y, g_cost + MOVE_COST, current, heuristic(x-1, y, x1, y1)); // (x-1, y) 2
-			if (chk_dir(DIR_SOUTH|DIR_WEST) && !md->getcellp(md, x-1, y-1, cell))
+			if (chk_dir(DIR_SOUTH|DIR_WEST) && !md->getcellp(md, bl, x-1, y-1, cell))
 				e += add_path(&open_set, x-1, y-1, g_cost + MOVE_DIAGONAL_COST, current, heuristic(x-1, y-1, x1, y1)); // (x-1, y-1) 3
 			if (chk_dir(DIR_SOUTH))
 				e += add_path(&open_set, x, y-1, g_cost + MOVE_COST, current, heuristic(x, y-1, x1, y1)); // (x, y-1) 4
@@ -701,7 +701,7 @@ bool atcommand_createnavigationlua_sub(void) {
 					continue;
 				}
 
-				if( !path_search_navi(&wpd, m, nd->bl.x, nd->bl.y, wnd->u.warp.x, wnd->u.warp.y, CELL_CHKNOREACH) )
+				if (!path_search_navi(&wpd, &nd->bl, m, nd->bl.x, nd->bl.y, wnd->u.warp.x, wnd->u.warp.y, CELL_CHKNOREACH))
 					continue;
 
 				fprintf(fp_npcdist, OUT_INDENT OUT_FINDENT OUT_FINDENT "{ \"%s\", %d, %d }, -- Srcmap, gid, dist (%s,%d,%d)\n", map->list[w.src.map].name, w.gid, wpd.path_len, map->list[w.src.map].name, w.src.x, w.src.y);
@@ -742,7 +742,7 @@ bool atcommand_createnavigationlua_sub(void) {
 				if (!linkdata_convert(&map_npcdata[m], warpidx2, false, &w2))
 					continue;
 
-				if( !path_search_navi(&wpd, m, w1.src.x, w1.src.y, w2.src.x, w2.src.y, CELL_CHKNOREACH) )
+				if (!path_search_navi(&wpd, NULL, m, w1.src.x, w1.src.y, w2.src.x, w2.src.y, CELL_CHKNOREACH))
 					continue;
 
 				fprintf(fp_linkdist, OUT_INDENT OUT_FINDENT OUT_FINDENT "{ \"P\", %d, %d }, -- ReachableFromSrc warp (%s,%d,%d)\n", w2.gid, wpd.path_len, map->list[m].name, w2.src.x, w2.src.y); // ReachableFromSrc warp
@@ -755,7 +755,7 @@ bool atcommand_createnavigationlua_sub(void) {
 				if (!linkdata_convert(&map_npcdata[w1.dst.map], warpidx2, false, &w2))
 					continue;
 
-				if( !path_search_navi(&wpd, w1.dst.map, w1.dst.x, w1.dst.y, w2.src.x, w2.src.y, CELL_CHKNOREACH) )
+				if (!path_search_navi(&wpd, NULL, w1.dst.map, w1.dst.x, w1.dst.y, w2.src.x, w2.src.y, CELL_CHKNOREACH))
 					continue;
 
 				fprintf(fp_linkdist, OUT_FINDENT OUT_FINDENT OUT_FINDENT "{ \"E\", %d, %d }, -- ReachableFromDst warp (%s,%d,%d)\n", w2.gid, wpd.path_len, map->list[w1.dst.map].name, w2.src.x, w2.src.y); // ReachableFromDst warp

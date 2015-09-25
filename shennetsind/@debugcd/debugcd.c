@@ -27,7 +27,7 @@ ACMD(debugcd) {
 	char pout[99];
 	int i;
 
-	if( !message || !*message ) {
+	if (!*message) {
 		clif->message(fd,"Usage: @debugcd <char_name>");
 		return false;
 	}

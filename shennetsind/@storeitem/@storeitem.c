@@ -39,7 +39,7 @@ ACMD(storeitem) {
 
 	memset(item_name, '\0', sizeof(item_name));
 
-	if (!message || !*message || sscanf(message, "%49s %d %d %23[^\n]", item_name, &number, &ref, character) < 4) {
+	if (!*message || sscanf(message, "%49s %d %d %23[^\n]", item_name, &number, &ref, character) < 4) {
 		clif->message(fd, "(usage: @storeitem <item name or ID> <quantity> <refine> <char name>).");
 		return false;
 	}

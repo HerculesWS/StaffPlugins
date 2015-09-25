@@ -40,7 +40,7 @@ struct s_cooldown_rate {
 int skill_blockpc_start_preHook(struct map_session_data *sd, uint16 *skill_id, int *tick, bool *load) {
 	struct s_cooldown_rate *data;
 
-	if( *tick > 1 && sd && (data = getFromMSD(sd,0)) ) {
+	if (*tick > 1 && sd && (data = getFromMSD(sd,0)) != NULL) {
 		if( data->rate != 100 )
 			*tick = *tick * data->rate / 100;
 	}
