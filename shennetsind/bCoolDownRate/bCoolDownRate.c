@@ -3,7 +3,7 @@
 // Sample Hercules Plugin
 
 #include "common/hercules.h"
-#include "common/malloc.h"
+#include "common/memmgr.h"
 #include "common/mmo.h"
 #include "common/socket.h"
 #include "map/map.h"

@@ -20,7 +20,7 @@
 
 #include "common/hercules.h"
 #include "common/cbasetypes.h"
-#include "common/malloc.h"
+#include "common/memmgr.h"
 #include "common/strlib.h"
 #include "map/itemdb.h"
 #include "map/map.h"
