@@ -103,7 +103,7 @@ struct path_node {
 };
 
 /// Binary heap of path nodes
-BHEAP_STRUCT_DECL(node_heap, struct path_node*);
+BHEAP_STRUCT_DECL(node_heap, struct path_node *);
 
 /// Comparator for binary heap of path nodes (minimum cost at top)
 #define NODE_MINTOPCMP(i,j) ((i)->f_cost - (j)->f_cost)
@@ -116,7 +116,8 @@ BHEAP_STRUCT_DECL(node_heap, struct path_node*);
 /// @}
 
 // Translates dx,dy into walking direction
-static const unsigned char walk_choices [3][3] = {
+static const unsigned char walk_choices [3][3] =
+{
 	{1,0,7},
 	{2,-1,6},
 	{3,4,5},
@@ -215,9 +216,8 @@ static int add_path(struct node_heap *heap, int16 x, int16 y, int g_cost, struct
  * flag: &1 = easy path search only
  * cell: type of obstruction to check for
  *------------------------------------------*/
-static bool path_search_navi(struct walkpath_data_navi *wpd, struct block_list *bl, int16 m, int16 x0, int16 y0, int16 x1, int16 y1, cell_chk cell)
+static bool path_search_navi(struct walkpath_data_navi *wpd, const struct block_list *bl, int16 m, int16 x0, int16 y0, int16 x1, int16 y1, cell_chk cell)
 {
-	register int i, j, x, y, dx, dy;
 	struct map_data *md;
 	struct walkpath_data_navi s_wpd;
 
@@ -256,6 +256,7 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, struct block_list *
 		int xs = md->xs - 1;
 		int ys = md->ys - 1;
 		int len = 0;
+		register int i, j;
 		memset(tpused, 0, sizeof(tpused));
 
 		// Start node
@@ -272,6 +273,7 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, struct block_list *
 
 		for(;;) {
 			int e = 0; // error flag
+			register int x, y;
 
 			// Saves allowed directions for the current cell. Diagonal directions
 			// are only allowed if both directions around it are allowed. This is
@@ -333,7 +335,7 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, struct block_list *
 		}
 
 		for (it = current; it->parent != NULL; it = it->parent, len++);
-		if (len > sizeof(wpd->path)) {
+		if (len > (int)sizeof(wpd->path)) {
 			return false;
 		}
 
@@ -341,6 +343,7 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, struct block_list *
 		wpd->path_len = len;
 		wpd->path_pos = 0;
 		for (it = current, j = len-1; j >= 0; it = it->parent, j--) {
+			register int dx, dy;
 			dx = it->x - it->parent->x;
 			dy = it->y - it->parent->y;
 			wpd->path[j] = walk_choices[-dy + 1][dx + 1];
@@ -351,31 +354,28 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, struct block_list *
 	return false;
 }
 
+struct s_warplog_warp_pos {
+	int map;
+	int x;
+	int y;
+};
 struct s_warplog_warp {
-	struct {
-		int map;
-		int x;
-		int y;
-	} src;
-	struct {
-		int map;
-		int x;
-		int y;
-	} dst;
-	char *name;
+	struct s_warplog_warp_pos src;
+	struct s_warplog_warp_pos dst;
+	const char *name;
 	int gid;
 };
 
 struct s_map_npcdata {
-	TBL_NPC *npcs[MAX_NPC_PER_MAP];
+	const struct npc_data *npcs[MAX_NPC_PER_MAP];
 	int nnpcs;
 
-	TBL_NPC *inner_warps[MAX_NPC_PER_MAP]; // Warps leading to this map
-	struct s_warplog_warp *inner_links[MAX_NPC_PER_MAP];
+	const struct npc_data *inner_warps[MAX_NPC_PER_MAP]; ///< Warps leading to this map
+	const struct s_warplog_warp *inner_links[MAX_NPC_PER_MAP];
 	int ninner_warps;
 
-	TBL_NPC *outer_warps[MAX_NPC_PER_MAP]; // Warps leading from this map
-	struct s_warplog_warp *outer_links[MAX_NPC_PER_MAP];
+	const struct npc_data *outer_warps[MAX_NPC_PER_MAP]; ///< Warps leading from this map
+	const struct s_warplog_warp *outer_links[MAX_NPC_PER_MAP];
 	int nouter_warps;
 };
 
@@ -392,7 +392,8 @@ enum {
 	WARPLOG_TYPE_AIRPORT   = 205, // airport
 };
 
-void atcommand_createnavigationlua_sub_mob(FILE *fp, int m, struct mob_db *mobinfo, int amount, int mob_global_idx) {
+void atcommand_createnavigationlua_sub_mob(FILE *fp, int m, const struct mob_db *mobinfo, int amount, int mob_global_idx)
+{
 	fprintf(fp, OUT_INDENT "{" OUT_SEPARATOR);
 	fprintf(fp, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, map->list[m].name);     // Map gat
 	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, mob_global_idx);            // Global ID
@@ -406,12 +407,16 @@ void atcommand_createnavigationlua_sub_mob(FILE *fp, int m, struct mob_db *mobin
 	fprintf(fp, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, mobinfo->jname);        // Mob Name
 	fprintf(fp, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, mobinfo->sprite);       // Sprite Name
 	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, mobinfo->lv);               // Mob Level
-	fprintf(fp, OUT_INDENT OUT_INDENT "%u," OUT_SEPARATOR, ((mobinfo->status.ele_lv*20+mobinfo->status.def_ele) << 16) | ( mobinfo->status.size << 8 ) | mobinfo->status.race);
+	fprintf(fp, OUT_INDENT OUT_INDENT "%u," OUT_SEPARATOR,
+			((uint32)(mobinfo->status.ele_lv*20+mobinfo->status.def_ele) << 16)
+			| ((uint32)mobinfo->status.size << 8)
+			| mobinfo->status.race);
 	                                                                                   // Element << 16 | Size << 8 | Race
 	fprintf(fp, OUT_INDENT "},\n");
 }
 
-void atcommand_createnavigationlua_sub_map(FILE *fp, int m) {
+void atcommand_createnavigationlua_sub_map(FILE *fp, int m)
+{
 	fprintf(fp, OUT_INDENT "{" OUT_SEPARATOR);
 	fprintf(fp, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, map->list[m].name); // Map gat
 	/*
@@ -419,16 +424,17 @@ void atcommand_createnavigationlua_sub_map(FILE *fp, int m) {
 	 * A possible improvement to this plugin would be to have it read mapnametable.txt and store them into a strdb.
 	 */
 	fprintf(fp, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, map->list[m].name); // Map Name
-	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, strstr(map->list[m].name, "_in") ? 5003 : ( strstr(map->list[m].name, "air") ? 5002 : 5001 ) );
+	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, strstr(map->list[m].name, "_in") ? 5003 : (strstr(map->list[m].name, "air") ? 5002 : 5001));
 	                                                                               // 5001 = normal, 5002 = airport/airship, 5003 = indoor maps
 	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, map->list[m].xs);       // Map size X
 	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, map->list[m].ys);       // Map size Y
 	fprintf(fp, OUT_INDENT "},\n");
 }
 
-void atcommand_createnavigationlua_sub_warp(FILE *fp_link, TBL_NPC *nd, int mnext, int nlink) {
-	struct npc_data_append *nda;
-	if( !(nda = getFromNPCD(nd, 0)) ) {
+void atcommand_createnavigationlua_sub_warp(FILE *fp_link, const struct npc_data *nd, int mnext, int nlink)
+{
+	const struct npc_data_append *nda;
+	if ((nda = getFromNPCD(nd, 0)) == NULL) {
 		ShowError("Unable to find NPC ID for NPC '%s'. Skipping...\n", nd->exname);
 		return;
 	}
@@ -439,7 +445,7 @@ void atcommand_createnavigationlua_sub_warp(FILE *fp_link, TBL_NPC *nd, int mnex
 	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, 200);                          // 200 = warp , 201 = npc script (free?), 202 = Kafra Dungeon Warp,
 	                                                                                           // 203 = Cool Event Dungeon Warp, 204 Kafra/Cool Event/Alberta warp,
 	                                                                                           // 205 = airport  (Currently we only support warps)
-	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, (nd->vd->class_ == WARP_CLASS) ? 99999 : nd->vd->class_);
+	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, (nd->vd->class_ == WARP_CLASS) ? 99999 : (int)nd->vd->class_);
 	                                                                                           // sprite id, 99999 = warp portal
 	fprintf(fp_link, OUT_INDENT OUT_INDENT "\"%s_%s_%d\"," OUT_SEPARATOR, map->list[nd->bl.m].name, map->list[mnext].name, nlink);
 	                                                                                           // Name
@@ -452,12 +458,13 @@ void atcommand_createnavigationlua_sub_warp(FILE *fp_link, TBL_NPC *nd, int mnex
 	fprintf(fp_link, OUT_INDENT "},\n");
 }
 
-void atcommand_createnavigationlua_sub_npc(FILE *fp_npc, TBL_NPC *nd, int nnpc) {
+void atcommand_createnavigationlua_sub_npc(FILE *fp_npc, const struct npc_data *nd, int nnpc)
+{
 	char visible_name[256];
-	char *delimiter;
-	struct npc_data_append *nda;
+	char *delimiter = NULL;
+	const struct npc_data_append *nda = NULL;
 
-	if( !(nda = getFromNPCD(nd, 0)) ) {
+	if ((nda = getFromNPCD(nd, 0)) == NULL) {
 		ShowError("Unable to find NPC ID for NPC '%s'. Skipping...\n", nd->exname);
 		return;
 	}
@@ -465,8 +472,8 @@ void atcommand_createnavigationlua_sub_npc(FILE *fp_npc, TBL_NPC *nd, int nnpc) 
 	safestrncpy(visible_name, nd->name, sizeof(visible_name));
 
 	delimiter = strchr(visible_name,'#');
-	if ( delimiter != 0 )
-		*delimiter = 0;
+	if (delimiter != NULL)
+		*delimiter = '\0';
 
 	fprintf(fp_npc, OUT_INDENT "{" OUT_SEPARATOR);
 	fprintf(fp_npc, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, map->list[nd->bl.m].name); // Map gat
@@ -481,7 +488,8 @@ void atcommand_createnavigationlua_sub_npc(FILE *fp_npc, TBL_NPC *nd, int nnpc) 
 	fprintf(fp_npc, OUT_INDENT "},\n");
 }
 
-bool createdirectory(const char *dirname) {
+bool createdirectory(const char *dirname)
+{
 #ifdef WIN32
 	if (!CreateDirectory(dirname, NULL)) {
 		if (ERROR_ALREADY_EXISTS != GetLastError())
@@ -497,9 +505,10 @@ bool createdirectory(const char *dirname) {
 	return true;
 }
 
-void writeheader(FILE *fp, const char *table_name) {
+void writeheader(FILE *fp, const char *table_name)
+{
 	time_t t = time(NULL);
-	struct tm *lt = localtime(&t);
+	const struct tm *lt = localtime(&t);
 
 	fprintf(fp,
 		"-- File generated by the Hercules naviluagenerator plugin\n"
@@ -512,14 +521,15 @@ void writeheader(FILE *fp, const char *table_name) {
 
 // Converts NPC warp data to unified s_warplog_warp structure.
 // Note that src.map / dst.map variables have map_ids instead of mapindices.
-bool linkdata_convert(const struct s_map_npcdata *npcdata, int idx, bool inner, struct s_warplog_warp *out) {
-	if (!out)
+bool linkdata_convert(const struct s_map_npcdata *npcdata, int idx, bool inner, struct s_warplog_warp *out)
+{
+	if (out == NULL)
 		return false;
 
-	if ( ( inner && npcdata->inner_warps[idx] ) || ( !inner && npcdata->outer_warps[idx] ) ) {
-		TBL_NPC *wnd = ( inner ? npcdata->inner_warps[idx] : npcdata->outer_warps[idx] );
-		struct npc_data_append *wnda;
-		if( !(wnda = getFromNPCD(wnd, 0)) ) {
+	if ((inner && npcdata->inner_warps[idx] != NULL) || (!inner && npcdata->outer_warps[idx] != NULL)) {
+		const struct npc_data *wnd = (inner ? npcdata->inner_warps[idx] : npcdata->outer_warps[idx]);
+		const struct npc_data_append *wnda;
+		if ((wnda = getFromNPCD(wnd, 0)) == NULL) {
 			ShowError("Unable to find NPC ID for NPC '%s'. Skipping...\n", wnd->exname);
 			return false;
 		}
@@ -531,7 +541,7 @@ bool linkdata_convert(const struct s_map_npcdata *npcdata, int idx, bool inner, 
 		out->dst.x = wnd->u.warp.x;
 		out->dst.y = wnd->u.warp.y;
 	} else {
-		struct s_warplog_warp *warp = ( inner ? npcdata->inner_links[idx] : npcdata->outer_links[idx] );
+		const struct s_warplog_warp *warp = (inner ? npcdata->inner_links[idx] : npcdata->outer_links[idx]);
 		out->gid = warp->gid;
 		out->src.map = map->mapindex2mapid(warp->src.map);
 		out->src.x = warp->src.x;
@@ -544,7 +554,8 @@ bool linkdata_convert(const struct s_map_npcdata *npcdata, int idx, bool inner, 
 	return true;
 }
 
-bool atcommand_createnavigationlua_sub(void) {
+bool atcommand_createnavigationlua_sub(void)
+{
 	int global_mob_idx = 17104;
 	int n=0;
 	int m;
@@ -554,8 +565,7 @@ bool atcommand_createnavigationlua_sub(void) {
 
 	struct s_map_npcdata *map_npcdata = NULL;
 
-	struct walkpath_data_navi wpd;
-	memset(&wpd, '\0', sizeof(wpd));
+	struct walkpath_data_navi wpd = { 0 };
 
 	ShowStatus("Creating navigation LUA files. This can take several minutes.\n");
 
@@ -571,18 +581,24 @@ bool atcommand_createnavigationlua_sub(void) {
 	fp_npcdist = fopen(DIRECTORYNAME PATHSEP_STR "navi_npcdistance_" NAMESUFFIX ".lua", "wt+");
 	fp_linkdist = fopen(DIRECTORYNAME PATHSEP_STR "navi_linkdistance_" NAMESUFFIX ".lua", "wt+");
 
-	if (!fp_mob || !fp_map || !fp_link || !fp_npc || !fp_npcdist || !fp_linkdist) {
-		if (fp_mob) fclose(fp_mob);
-		if (fp_map) fclose(fp_map);
-		if (fp_link) fclose(fp_link);
-		if (fp_npc) fclose(fp_npc);
-		if (fp_npcdist) fclose(fp_npcdist);
-		if (fp_linkdist) fclose(fp_linkdist);
+	if (fp_mob == NULL || fp_map == NULL || fp_link == NULL || fp_npc == NULL || fp_npcdist == NULL || fp_linkdist == NULL) {
+		if (fp_mob != NULL)
+			fclose(fp_mob);
+		if (fp_map != NULL)
+			fclose(fp_map);
+		if (fp_link != NULL)
+			fclose(fp_link);
+		if (fp_npc != NULL)
+			fclose(fp_npc);
+		if (fp_npcdist != NULL)
+			fclose(fp_npcdist);
+		if (fp_linkdist != NULL)
+			fclose(fp_linkdist);
 		ShowError("do_navigationlua: Unable to open output file.\n");
 		return false;
 	}
 
-	map_npcdata = (struct s_map_npcdata *)aCalloc(sizeof(struct s_map_npcdata), map->count);
+	map_npcdata = aCalloc(sizeof(struct s_map_npcdata), map->count);
 
 	ShowStatus("Stage 1: creating maps and objects list...\n");
 
@@ -593,27 +609,27 @@ bool atcommand_createnavigationlua_sub(void) {
 	writeheader(fp_npcdist, "Navi_NpcDistance");
 	writeheader(fp_linkdist, "Navi_Distance");
 
-	for( m=0; m < map->count; m++ ) {
+	for (m = 0; m < map->count; m++) {
 		//int nmapnpc=0;
 
 		atcommand_createnavigationlua_sub_map(fp_map, m);
 
 		// Warps/NPCs
-		for( npcidx = 0; npcidx < map->list[m].npc_num; npcidx++ ) {
-			TBL_NPC *nd = map->list[m].npc[npcidx];
-			struct npc_data_append *nda;
+		for (npcidx = 0; npcidx < map->list[m].npc_num; npcidx++) {
+			struct npc_data *nd = map->list[m].npc[npcidx];
+			struct npc_data_append *nda = NULL;
 
-			if( !nd )
+			if (nd == NULL)
 				continue;
 
-			if( !(nda = getFromNPCD(nd, 0)) ) {
-				CREATE(nda,struct npc_data_append,1);
+			if ((nda = getFromNPCD(nd, 0)) == NULL) {
+				CREATE(nda, struct npc_data_append, 1);
 				addToNPCD(nd, nda, 0, true);
 			}
 
-			if( nd->subtype == WARP ) {
+			if (nd->subtype == WARP) {
 				int mnext = map->mapindex2mapid(nd->u.warp.mapindex);
-				if( mnext < 0 )
+				if (mnext < 0)
 					continue;
 				nda->npcid = 13350 + nlink;
 
@@ -624,7 +640,7 @@ bool atcommand_createnavigationlua_sub(void) {
 
 				nlink++;
 			} else {
-				if( nd->class_ == -1 || nd->class_ == INVISIBLE_CLASS || nd->class_ == HIDDEN_WARP_CLASS || nd->class_ == FLAG_CLASS )
+				if (nd->class_ == FAKE_NPC || nd->class_ == INVISIBLE_CLASS || nd->class_ == HIDDEN_WARP_CLASS || nd->class_ == FLAG_CLASS)
 					continue;
 
 				nda->npcid = 11984 + nnpc;
@@ -639,14 +655,14 @@ bool atcommand_createnavigationlua_sub(void) {
 		}
 
 		// Mobs
-		for( mobidx=0; mobidx < MAX_MOB_LIST_PER_MAP; mobidx++ ) {
-			struct mob_db *mobinfo;
+		for (mobidx = 0; mobidx < MAX_MOB_LIST_PER_MAP; mobidx++) {
+			const struct mob_db *mobinfo = NULL;
 
-			if( !map->list[m].moblist[mobidx] )
+			if (map->list[m].moblist[mobidx] == NULL)
 				continue;
 
 			mobinfo = mob->db(map->list[m].moblist[mobidx]->class_);
-			if( mobinfo == mob->dummy )
+			if (mobinfo == mob->dummy)
 				continue;
 
 			atcommand_createnavigationlua_sub_mob(fp_mob, m, mobinfo, map->list[m].moblist[mobidx]->num, global_mob_idx+n);
@@ -668,8 +684,8 @@ bool atcommand_createnavigationlua_sub(void) {
 	ShowStatus("Stage 2: Creating NPC distance tables...\n");
 
 	// NPC distance lua
-	for( m = 0; m < map->count; m++ ) {
-		if( !map_npcdata[m].nnpcs || !map_npcdata[m].ninner_warps ) {
+	for (m = 0; m < map->count; m++) {
+		if (map_npcdata[m].nnpcs == 0 || map_npcdata[m].ninner_warps == 0) {
 			ShowStatus("Skipped %s NPC distance table, no NPCs in map (%d/%d)\n", map->list[m].name, m+1, map->count);
 			continue;
 		}
@@ -677,11 +693,11 @@ bool atcommand_createnavigationlua_sub(void) {
 		fprintf(fp_npcdist, OUT_INDENT "\"%s\", %d," OUT_SEPARATOR, map->list[m].name, map_npcdata[m].nnpcs); // Map gat, num of Objects
 		fprintf(fp_npcdist, OUT_INDENT "{\n");
 
-		for( npcidx = 0; npcidx < map_npcdata[m].nnpcs; npcidx++ ) {
-			TBL_NPC *nd = map_npcdata[m].npcs[npcidx];
-			struct npc_data_append *nda;
+		for (npcidx = 0; npcidx < map_npcdata[m].nnpcs; npcidx++) {
+			const struct npc_data *nd = map_npcdata[m].npcs[npcidx];
+			const struct npc_data_append *nda = NULL;
 
-			if( !(nda = getFromNPCD(nd, 0)) ) {
+			if ((nda = getFromNPCD(nd, 0)) == NULL) {
 				ShowError("Unable to find NPC ID for NPC '%s'. Skipping...\n", nd->exname);
 				continue;
 			}
@@ -689,14 +705,14 @@ bool atcommand_createnavigationlua_sub(void) {
 			//int nwarps=0;
 
 			fprintf(fp_npcdist, OUT_INDENT OUT_FINDENT "{ %d, -- GID (%s %s,%d,%d)\n", nda->npcid, nd->name, map->list[nd->bl.m].name, nd->bl.x, nd->bl.y); // NPC GID
-			for( warpidx = 0; warpidx < map_npcdata[m].ninner_warps; warpidx++ ) {
+			for (warpidx = 0; warpidx < map_npcdata[m].ninner_warps; warpidx++) {
 				struct s_warplog_warp w;
-				TBL_NPC *wnd = map_npcdata[m].inner_warps[warpidx];
-				struct npc_data_append *wnda;
+				const struct npc_data *wnd = map_npcdata[m].inner_warps[warpidx];
+				const struct npc_data_append *wnda = NULL;
 				if (!linkdata_convert(&map_npcdata[m], warpidx, true, &w))
 					continue;
 
-				if( !(wnda = getFromNPCD(wnd, 0)) ) {
+				if ((wnda = getFromNPCD(wnd, 0)) == NULL) {
 					ShowError("Unable to find NPC ID for NPC '%s'. Skipping...\n", wnd->exname);
 					continue;
 				}
@@ -720,11 +736,11 @@ bool atcommand_createnavigationlua_sub(void) {
 
 	ShowStatus("Stage 3: Creating Warp distance tables...\n");
 
-	for( m = 0; m < map->count; m++ ) {
+	for (m = 0; m < map->count; m++) {
 		fprintf(fp_linkdist, OUT_INDENT "\"%s\",%d," OUT_SEPARATOR, map->list[m].name, map_npcdata[m].nouter_warps); // Map gat, num of outer warps
 		fprintf(fp_linkdist, OUT_INDENT "{\n");
 
-		for( warpidx = 0; warpidx < map_npcdata[m].nouter_warps; warpidx++ ) {
+		for (warpidx = 0; warpidx < map_npcdata[m].nouter_warps; warpidx++) {
 			int warpidx2;
 			struct s_warplog_warp w1;
 			if (!linkdata_convert(&map_npcdata[m], warpidx, false, &w1))
@@ -733,10 +749,10 @@ bool atcommand_createnavigationlua_sub(void) {
 			fprintf(fp_linkdist, OUT_INDENT OUT_FINDENT "{ %d, -- GID (%s,%d,%d)\n", w1.gid, map->list[w1.src.map].name, w1.src.x, w1.src.y); // Warp GID
 
 			// ReachableFromSrc warps
-			for( warpidx2 = 0; warpidx2 < map_npcdata[m].nouter_warps; warpidx2++ ) {
+			for (warpidx2 = 0; warpidx2 < map_npcdata[m].nouter_warps; warpidx2++) {
 				struct s_warplog_warp w2;
 
-				if ( warpidx == warpidx2 )
+				if (warpidx == warpidx2)
 					continue;
 
 				if (!linkdata_convert(&map_npcdata[m], warpidx2, false, &w2))
@@ -749,7 +765,7 @@ bool atcommand_createnavigationlua_sub(void) {
 			}
 
 			// ReachableFromDst warps
-			for( warpidx2 = 0; warpidx2 < map_npcdata[w1.dst.map].nouter_warps; warpidx2++ ) {
+			for (warpidx2 = 0; warpidx2 < map_npcdata[w1.dst.map].nouter_warps; warpidx2++) {
 				struct s_warplog_warp w2;
 
 				if (!linkdata_convert(&map_npcdata[w1.dst.map], warpidx2, false, &w2))
@@ -777,27 +793,35 @@ bool atcommand_createnavigationlua_sub(void) {
 	return true;
 }
 
-void do_navigationlua(struct map_session_data *sd) {
-	if ( !atcommand_createnavigationlua_sub() ) {
+void do_navigationlua(struct map_session_data *sd)
+{
+	if (!atcommand_createnavigationlua_sub()) {
 		ShowError("Failed to create navigation LUA files\n");
-		if ( sd ) clif->message(sd->fd, "Failed to create navigation LUA files");
+		if (sd != NULL)
+			clif->message(sd->fd, "Failed to create navigation LUA files");
 	} else {
 		ShowStatus("File has been generated.\n");
-		if ( sd ) clif->message(sd->fd, "File has been generated.");
+		if (sd != NULL)
+			clif->message(sd->fd, "File has been generated.");
 	}
 }
 
-ACMD(createnavigationlua) {
+ACMD(createnavigationlua)
+{
 	do_navigationlua(sd);
 	return true;
 }
 
-CPCMD(createnavigationlua) {
+CPCMD(createnavigationlua)
+{
 	do_navigationlua(map->cpsd);
 }
-HPExport void server_preinit(void) {
+HPExport void server_preinit(void)
+{
 }
-HPExport void plugin_init(void) {
+
+HPExport void plugin_init(void)
+{
 	addCPCommand("server:tools:navigationlua", createnavigationlua);
 	addAtcommand("createnavigationlua", createnavigationlua);
 }
