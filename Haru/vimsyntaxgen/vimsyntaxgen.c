@@ -66,9 +66,10 @@ struct {
 } local;
 bool torun = false;
 
-void vimsyntaxgen_flush(int blanklines) {
+void vimsyntaxgen_flush(int blanklines)
+{
 	int i;
-	if (local.output.line[0]) {
+	if (local.output.line[0] != '\0') {
 		fprintf(local.fp, "%s%s%s\n", local.output.prefix[0] ? local.output.prefix : "",
 				local.output.line, local.output.terminator[0] ? local.output.terminator : "");
 	}
@@ -77,36 +78,39 @@ void vimsyntaxgen_flush(int blanklines) {
 		fprintf(local.fp, "\n");
 }
 
-void vimsyntaxgen_set(const char *prefix, const char *separator, const char *terminator) {
+void vimsyntaxgen_set(const char *prefix, const char *separator, const char *terminator)
+{
 	safestrncpy(local.output.prefix, prefix, sizeof(local.output.prefix));
 	safestrncpy(local.output.separator, separator, sizeof(local.output.separator));
 	safestrncpy(local.output.terminator, terminator, sizeof(local.output.terminator));
 }
 
-void vimsyntaxgen_append(const char *str) {
+void vimsyntaxgen_append(const char *str)
+{
 	size_t len = strlen(str);
 	size_t baselen = strlen(local.output.prefix) + strlen(local.output.terminator);
 	if (len + baselen >= LINE_LENGTH) {
 		ShowWarning("string %s is too long, skipping.\n", str);
 		return;
 	}
-	if (baselen + (local.output.line[0] ? strlen(local.output.line) + strlen(local.output.separator) : 0) + len >= LINE_LENGTH)
+	if (baselen + (local.output.line[0] != '\0' ? strlen(local.output.line) + strlen(local.output.separator) : 0) + len >= LINE_LENGTH)
 		vimsyntaxgen_flush(0);
 
-	if (local.output.line[0]) {
+	if (local.output.line[0] != '\0') {
 		safestrncpy(local.output.line + strlen(local.output.line), local.output.separator, sizeof(local.output.line) - strlen(local.output.line));
 	}
 	safestrncpy(local.output.line + strlen(local.output.line), str, sizeof(local.output.line) - strlen(local.output.line));
 }
 
 /// To override script_set_constant, called by script_read_constdb
-void vimsyntaxgen_script_set_constant(const char* name, int value, bool isparameter) {
-	static char lastprefix[7] = { 0 };
-	static size_t lastlen = 0;
+void vimsyntaxgen_script_set_constant(const char *name, int value, bool is_parameter, bool is_deprecated)
+{
 	static bool lastwasparameter = false;
-	char *underscore = NULL;
+	const char *underscore = NULL;
 
 	if ((underscore = strchr(name, '_'))) {
+		static char lastprefix[7] = { 0 };
+		static size_t lastlen = 0;
 		size_t len = 0;
 		if (underscore < name)
 			len = 0;
@@ -120,25 +124,26 @@ void vimsyntaxgen_script_set_constant(const char* name, int value, bool isparame
 			lastlen = len;
 		}
 	}
-	if (isparameter != lastwasparameter) {
+	if (is_parameter != lastwasparameter) {
 		vimsyntaxgen_flush(0);
-		if (isparameter)
+		if (is_parameter)
 			vimsyntaxgen_set(SYNKEYWORDPREFIX"hParam ", " ", "");
 		else
 			vimsyntaxgen_set(SYNKEYWORDPREFIX"hConstant ", " ", "");
-		lastwasparameter = isparameter;
+		lastwasparameter = is_parameter;
 	}
 	vimsyntaxgen_append(name);
 }
 
-void vimsyntaxgen_constdb(void) {
-	void (*script_set_constant) (const char* name, int value, bool isparameter) = NULL;
+void vimsyntaxgen_constdb(void)
+{
+	void (*script_set_constant) (const char *name, int value, bool is_parameter, bool is_deprecated) = NULL;
 	/* Link */
 	script_set_constant = script->set_constant;
 	script->set_constant = vimsyntaxgen_script_set_constant;
 
 	/* Run */
-	fprintf(local.fp, "\" Constants (imported from db/const.txt)\n");
+	fprintf(local.fp, "\" Constants (imported from db/constants.conf)\n");
 	vimsyntaxgen_set(SYNKEYWORDPREFIX"hConstant ", " ", "");
 	script->read_constdb();
 	script->hardcoded_constants();
@@ -149,7 +154,8 @@ void vimsyntaxgen_constdb(void) {
 }
 
 /// Cloned from mapindex_init
-void vimsyntaxgen_mapdb(void) {
+void vimsyntaxgen_mapdb(void)
+{
 	FILE *mfp;
 	char line[1024];
 	int index;
@@ -158,12 +164,12 @@ void vimsyntaxgen_mapdb(void) {
 
 	fprintf(local.fp, "\" Maps (imported from db/map_index.txt)\n");
 	vimsyntaxgen_set(SYNMATCHPREFIX"hMapName contained display \"\\%(", "\\|", "\\)\"");
-	if( ( mfp = fopen(mapindex_cfgfile,"r") ) == NULL ){
+	if ((mfp = fopen(mapindex_cfgfile,"r") ) == NULL) {
 		ShowFatalError("Unable to read mapindex config file %s!\n", mapindex_cfgfile);
 		return;
 	}
-	while(fgets(line, sizeof(line), mfp)) {
-		if(line[0] == '/' && line[1] == '/')
+	while (fgets(line, sizeof(line), mfp)) {
+		if (line[0] == '/' && line[1] == '/')
 			continue;
 
 		switch (sscanf(line, "%11s\t%d", map_name, &index)) {
@@ -181,7 +187,8 @@ void vimsyntaxgen_mapdb(void) {
 	return;
 }
 
-void vimsyntaxgen_skilldb(void) {
+void vimsyntaxgen_skilldb(void)
+{
 	int i;
 
 	fprintf(local.fp, "\" Skills (imported from db/*/skill_db.txt)\n");
@@ -193,7 +200,8 @@ void vimsyntaxgen_skilldb(void) {
 	vimsyntaxgen_flush(1);
 }
 
-void vimsyntaxgen_mobdb(void) {
+void vimsyntaxgen_mobdb(void)
+{
 	int i;
 
 	fprintf(local.fp, "\" Mobs (imported from db/*/mob_db.txt)\n");
@@ -208,27 +216,29 @@ void vimsyntaxgen_mobdb(void) {
 }
 
 /// Cloned from itemdb_search
-struct item_data* vimsyntaxgen_itemdb_search(int nameid) {
-	struct item_data* id;
-	if( nameid >= 0 && nameid < ARRAYLENGTH(itemdb->array) )
+struct item_data *vimsyntaxgen_itemdb_search(int nameid)
+{
+	struct item_data *id = NULL;
+	if (nameid >= 0 && nameid < ARRAYLENGTH(itemdb->array))
 		id = itemdb->array[nameid];
 	else
-		id = (struct item_data*)idb_get(itemdb->other, nameid);
+		id = idb_get(itemdb->other, nameid);
 
-	if( id == NULL ) {
+	if (id == NULL)
 		return NULL;
-	}
+
 	return id;
 }
 
-void vimsyntaxgen_itemdb(void) {
+void vimsyntaxgen_itemdb(void)
+{
 	int i;
 
 	fprintf(local.fp, "\" Items (imported from db/*/item_db.conf)\n");
 	vimsyntaxgen_set(SYNKEYWORDPREFIX"hItemId ", " ", "");
 	for (i = 0; i < ARRAYLENGTH(itemdb->array); i++) {
 		struct item_data *id = vimsyntaxgen_itemdb_search(i);
-		if (!id || !id->name[0])
+		if (id == NULL || id->name[0] == '\0')
 			continue;
 		vimsyntaxgen_append(id->name);
 	}
@@ -276,9 +286,10 @@ struct cmd_info *cmd_hDeprecatedExtra = NULL;
 int cmd_hDeprecatedExtra_count = 0;
 #undef CMD_PUSH
 
-bool vimsyntaxgen_script_add_builtin(const struct script_function *buildin, bool override) {
+bool vimsyntaxgen_script_add_builtin(const struct script_function *buildin, bool override)
+{
 	int i;
-	if (!buildin)
+	if (buildin == NULL)
 		return false;
 	if (strncmp("__", buildin->name, 2) == 0) // Skip internal commands
 		return false;
@@ -310,7 +321,8 @@ bool vimsyntaxgen_script_add_builtin(const struct script_function *buildin, bool
 	return false;
 }
 
-void vimsyntaxgen_scriptcmd(void) {
+void vimsyntaxgen_scriptcmd(void)
+{
 	int i;
 	bool (*script_add_builtin) (const struct script_function *buildin, bool override) = NULL;
 
@@ -368,7 +380,8 @@ void vimsyntaxgen_scriptcmd(void) {
 	script->add_builtin = script_add_builtin;
 }
 
-bool createdirectory(const char *dirname) {
+bool createdirectory(const char *dirname)
+{
 #ifdef WIN32
 	if (!CreateDirectory(dirname, NULL)) {
 		if (ERROR_ALREADY_EXISTS != GetLastError())
@@ -384,9 +397,10 @@ bool createdirectory(const char *dirname) {
 	return true;
 }
 
-void writeheader(const char *description) {
+void writeheader(const char *description)
+{
 	time_t t = time(NULL);
-	struct tm *lt = localtime(&t);
+	const struct tm *lt = localtime(&t);
 
 	fprintf(local.fp,
 		"\" %s\n"
@@ -396,7 +410,8 @@ void writeheader(const char *description) {
 		"\n\n", description, lt->tm_year+1900, lt->tm_mon+1, lt->tm_mday);
 }
 
-void do_vimsyntaxgen(void) {
+void do_vimsyntaxgen(void)
+{
 	memset(&local, 0, sizeof(local));
 
 	if (!createdirectory(DIRECTORYNAME)
@@ -404,7 +419,8 @@ void do_vimsyntaxgen(void) {
 	 || !createdirectory(DIRECTORYNAME PATHSEP_STR "ftplugin")
 	 || !createdirectory(DIRECTORYNAME PATHSEP_STR "indent")
 	 || !createdirectory(DIRECTORYNAME PATHSEP_STR "syntastic")
-	 || !createdirectory(DIRECTORYNAME PATHSEP_STR "syntax") ) {
+	 || !createdirectory(DIRECTORYNAME PATHSEP_STR "syntax")
+	) {
 		ShowError("do_vimsyntaxgen: Unable to create output directory\n");
 		return;
 	}
@@ -561,7 +577,8 @@ void do_vimsyntaxgen(void) {
 		"if !exists('g:syntastic_"SYNTAXLANGUAGE"_config_file')\n"
 		"    let g:syntastic_"SYNTAXLANGUAGE"_config_file = '.syntastic_"SYNTAXLANGUAGE"_config'\n"
 		"endif\n"
-		"\n"
+		"\n");
+	fprintf(local.fp,
 		"function! SyntaxCheckers_"SYNTAXLANGUAGE"_hercules_GetLocList() dict\n"
 		"    \"let makeprg = g:syntastic_"SYNTAXLANGUAGE"_compiler . ''\n"
 		"    let makeprg = self.makeprgBuild({\n"
@@ -605,7 +622,8 @@ void do_vimsyntaxgen(void) {
 		"        \\ '[%%trror]: %%m in file ''%%f''%%\\%%.,'\n"
 		"    \" from npc_skip_script\n"
 		"    \" > ShowError(\"npc_skip_script: Missing left curly in file '%%s', line '%%d'.\\n\");\n"
-		"    \" > ShowError(\"Missing %%d right curlys at file '%%s', line '%%d'.\\n\");\n"
+		"    \" > ShowError(\"Missing %%d right curlys at file '%%s', line '%%d'.\\n\");\n");
+	fprintf(local.fp,
 		"    let errorformat .= ''\n"
 		"    \" from npc_parse_script\n"
 		"    \" > ShowError(\"npc_parse_script: Invalid placement format for a script in file '%%s', line '%%d'. Skipping the rest of file...\\n * w1=%%s\\n * w2=%%s\\n * w3=%%s\\n * w4=%%s\\n\");\n"
@@ -634,7 +652,8 @@ void do_vimsyntaxgen(void) {
 		"    \" > ShowError(\"npc_parse_mob: Invalid ai %%d for mob ID %%d in file '%%s', line '%%d'.\\n\");\n"
 		"    \" > ShowError(\"npc_parse_mob: Invalid level %%d for mob ID %%d in file '%%s', line '%%d'.\\n\");\n"
 		"    \" > ShowError(\"npc_parse_mob: Invalid spawn delays %%u %%u in file '%%s', line '%%d'.\\n\");\n"
-		"    \" > ShowError(\"npc_parse_mob: Invalid dataset for monster ID %%d in file '%%s', line '%%d'.\\n\");\n"
+		"    \" > ShowError(\"npc_parse_mob: Invalid dataset for monster ID %%d in file '%%s', line '%%d'.\\n\");\n");
+	fprintf(local.fp,
 		"    let errorformat .= ''\n"
 		"    \" from npc_parse_mapflag\n"
 		"    \" > ShowError(\"npc_parse_mapflag: Invalid mapflag definition in file '%%s', line '%%d'.\\n * w1=%%s\\n * w2=%%s\\n * w3=%%s\\n * w4=%%s\\n\");\n"
@@ -667,7 +686,8 @@ void do_vimsyntaxgen(void) {
 		"    \" for ENABLE_CASE_CHECK\n"
 		"    let errorformat .=\n"
 		"        \\ '[%%trror]: %%m (in ''%%f'')%%.%%#,'\n"
-		"\n"
+		"\n");
+	fprintf(local.fp,
 		"    let errorformat .=\n"
 		"        \\ '%%E[%%trror]: %%.script error in file ''%%f'' line %%l column %%c,%%Z%%m,' .\n"
 		"        \\ '%%W[%%tarning]: script error in file ''%%f'' line %%l column %%c,%%Z%%m,' .\n"
@@ -760,7 +780,8 @@ void do_vimsyntaxgen(void) {
 		"    syn match	hSpaceError	display \" \\+\\t\"me=e-1\n"
 		"\"  endif\n"
 		"\"endif\n"
-		"\n"
+		"\n");
+	fprintf(local.fp,
 		"if exists(\"c_curly_error\")\n"
 		"  syntax match hCurlyError	\"}\"\n"
 		"  syntax region hBlock		start=\"{\" end=\"}\" contains=ALLBUT,hCurlyError,@hParenGroup,hErrInParen,hErrInBracket,hString,@hTopLevel,@Spell fold\n"
@@ -797,7 +818,8 @@ void do_vimsyntaxgen(void) {
 		"syn match	hNumber		display contained \"\\d\\+\\>\"\n"
 		"\"hex number\n"
 		"syn match	hNumber		display contained \"0x\\x\\+\\>\"\n"
-		"\n"
+		"\n");
+	fprintf(local.fp,
 		"syn case match\n"
 		"\n"
 		"syntax match	hTopError	excludenl \".\\+\" contained\n"
@@ -826,7 +848,8 @@ void do_vimsyntaxgen(void) {
 		"syntax match	hTopMapflag	excludenl \"adjust_\\%%(unit_duration\\|skill_damage\\)\\t.*\" contained\n"
 		"syntax match	hTopMapflag	excludenl \"zone\\t.*\" contained\n"
 		"\" TODO: adjust_unit_duration, adjust_skill_damage\n"
-		"\n"
+		"\n");
+	fprintf(local.fp,
 		"syntax match	hTopTypeM	excludenl \"\\%%(\\|boss_\\)monster\\t\" contained nextgroup=hTopNameMob,hTopError\n"
 		"syntax match	hTopTypeW	excludenl \"warp\\t\" contained nextgroup=hTopNameWarp,hTopError\n"
 		"syntax match	hTopTypeS	excludenl \"\\%%(script\\|trader\\)\\t\" contained nextgroup=hTopNameScript,hTopError\n"
@@ -912,7 +935,8 @@ void do_vimsyntaxgen(void) {
 		"\n"
 		"syn match	hSwitchLabel	display \"\\s*case\\s*\\i*\\s*:\"me=e-1 contains=hNumber,hConstant,hParam\n"
 		"syn match	hSwitchLabel	display \"\\s*default:\"me=e-1\n"
-		"\n"
+		"\n");
+	fprintf(local.fp,
 		"if exists(\"c_comment_strings\")\n"
 		"  \" A comment can contain hString and hNumber.\n"
 		"  \" But a \"*/\" inside an hString in an hComment DOES end the comment!  So we\n"
@@ -955,7 +979,8 @@ void do_vimsyntaxgen(void) {
 		"  syn sync fromstart\n"
 		"else\n"
 		"  exec \"syn sync ccomment hComment minlines=\" . b:c_minlines\n"
-		"endif\n"
+		"endif\n");
+	fprintf(local.fp,
 		"\n"
 		"\" Define the default highlighting.\n"
 		"\" Only used when an item doesn't have highlighting yet\n"
@@ -1020,21 +1045,30 @@ void do_vimsyntaxgen(void) {
 		"\" vim: set ts=8 tw=%d colorcolumn=%d :\n", LINE_LENGTH, LINE_LENGTH);
 	fclose(local.fp);
 }
-CPCMD(vimsyntaxgen) {
+
+CPCMD(vimsyntaxgen)
+{
 	do_vimsyntaxgen();
 }
+
 CMDLINEARG(vimsyntaxgen)
 {
 	map->minimal = torun = true;
 	return true;
 }
-HPExport void server_preinit(void) {
+
+HPExport void server_preinit(void)
+{
 	addArg("--vimsyntaxgen", false, vimsyntaxgen, NULL);
 }
-HPExport void plugin_init(void) {
+
+HPExport void plugin_init(void)
+{
 	addCPCommand("server:tools:vimsyntaxgen", vimsyntaxgen);
 }
-HPExport void server_online(void) {
+
+HPExport void server_online(void)
+{
 	if (torun)
 		do_vimsyntaxgen();
 }
