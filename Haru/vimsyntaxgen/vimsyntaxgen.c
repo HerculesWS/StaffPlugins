@@ -442,7 +442,7 @@ void do_vimsyntaxgen(void)
 
 	/* File Type Detector */
 	if ((local.fp = fopen(DIRECTORYNAME PATHSEP_STR "ftdetect" PATHSEP_STR SYNTAXLANGUAGE".vim", "wt+")) == NULL) {
-		ShowError("do_vimsyntaxgen: Unable to open syntastic output file\n");
+		ShowError("do_vimsyntaxgen: Unable to open ftdetect output file\n");
 		return;
 	}
 	writeheader("Vim File type detection file");
@@ -466,7 +466,7 @@ void do_vimsyntaxgen(void)
 
 	/* File Type plugin */
 	if ((local.fp = fopen(DIRECTORYNAME PATHSEP_STR "ftplugin" PATHSEP_STR SYNTAXLANGUAGE".vim", "wt+")) == NULL) {
-		ShowError("do_vimsyntaxgen: Unable to open syntastic output file\n");
+		ShowError("do_vimsyntaxgen: Unable to open ftplugin output file\n");
 		return;
 	}
 	writeheader("Vim filetype plugin file");
@@ -517,7 +517,7 @@ void do_vimsyntaxgen(void)
 
 	/* Indentation definition */
 	if ((local.fp = fopen(DIRECTORYNAME PATHSEP_STR "indent" PATHSEP_STR SYNTAXLANGUAGE".vim", "wt+")) == NULL) {
-		ShowError("do_vimsyntaxgen: Unable to open syntastic output file\n");
+		ShowError("do_vimsyntaxgen: Unable to open indent output file\n");
 		return;
 	}
 	writeheader("Vim indent file");
@@ -617,6 +617,10 @@ void do_vimsyntaxgen(void)
 		"    let errorformat .=\n"
 		"        \\ '%%-G[Debug]: this npc:,' .\n"
 		"        \\ '%%-G[Debug]: other npc in ''%%.%%#'' :,'\n"
+		"    \" from npc_parseview\n"
+		"    \" > ShowWarning(\"npc_parseview: Invalid NPC constant '%%s' specified in file '%%s', line '%%d'.  Defaulting to INVISIBLE_CLASS.\\n\");\n"
+		"    \" > ShowWarning(\"npc_parseview: Use of numeric NPC view IDs is deprecated and may be removed in a future update. Please use NPC view constants instead. ID '%%d' specified in file '%%s', line '%%d'.\\n\");\n"
+		"    let errorformat .= ''\n"
 		"    \" from npc_parse_warp\n"
 		"    \" > ShowError(\"npc_parse_warp: Invalid warp definition in file '%%s', line '%%d'.\\n * w1=%%s\\n * w2=%%s\\n * w3=%%s\\n * w4=%%s\\n\");\n"
 		"    \" > ShowError(\"npc_parse_warp: Unknown destination map in file '%%s', line '%%d' : %%s\\n * w1=%%s\\n * w2=%%s\\n * w3=%%s\\n * w4=%%s\\n\");\n"
@@ -624,11 +628,13 @@ void do_vimsyntaxgen(void)
 		"    let errorformat .= ''\n"
 		"    \" from npc_parse_shop\n"
 		"    \" > ShowError(\"npc_parse_shop: Invalid shop definition in file '%%s', line '%%d'.\\n * w1=%%s\\n * w2=%%s\\n * w3=%%s\\n * w4=%%s\\n\");\n"
+		"    \" > ShowError(\"npc_parse_shop: Invalid NPC facing direction '%%d' in file '%%s', line '%%d'.\\n\");\n"
 		"    \" > ShowError(\"npc_parse_shop: out-of-bounds coordinates (\\\"%%s\\\",%%d,%%d), map is %%dx%%d, in file '%%s', line '%%d'\\n\");\n"
 		"    \" > ShowError(\"npc_parse_shop: Invalid item definition in file '%%s', line '%%d'. Ignoring the rest of the line...\\n * w1=%%s\\n * w2=%%s\\n * w3=%%s\\n * w4=%%s\\n\");\n"
 		"    \" > ShowWarning(\"npc_parse_shop: Invalid sell item in file '%%s', line '%%d' (id '%%d').\\n\");\n"
+		"    \" > ShowWarning(\"npc_parse_shop: Item %%s [%%d] with invalid selling value '%%d' in file '%%s', line '%%d', defaulting to buy price...\\n\");\n"
 		"    \" > ShowWarning(\"npc_parse_shop: Item %%s [%%d] is being sold for FREE in file '%%s', line '%%d'.\\n\")\n"
-		"    \" > ShowWarning(\"npc_parse_shop: Item %%s [%%d] discounted buying price (%%d->%%d) is less than overcharged selling price (%%d->%%d) at file '%%s', line '%%d'.\\n\");\n"
+		"    \" > ShowWarning(\"npc_parse_shop: Item %%s [%%d] discounted buying price (%%d->%%d) is less than overcharged selling price (%%d->%%d) in file '%%s', line '%%d'.\\n\");\n"
 		"    \" > ShowWarning(\"npc_parse_shop: Ignoring empty shop in file '%%s', line '%%d'.\\n\");\n"
 		"    let errorformat .= ''\n"
 		"    \" from npc_convertlabel_db\n"
@@ -637,21 +643,25 @@ void do_vimsyntaxgen(void)
 		"        \\ '[%%trror]: %%m in file ''%%f''%%\\%%.,'\n"
 		"    \" from npc_skip_script\n"
 		"    \" > ShowError(\"npc_skip_script: Missing left curly in file '%%s', line '%%d'.\\n\");\n"
-		"    \" > ShowError(\"Missing %%d right curlys at file '%%s', line '%%d'.\\n\");\n");
+		"    \" > ShowError(\"Missing %%d right curlys in file '%%s', line '%%d'.\\n\");\n"
+		"    let errorformat .= ''\n");
 	fprintf(local.fp,
-		"    let errorformat .= ''\n"
 		"    \" from npc_parse_script\n"
 		"    \" > ShowError(\"npc_parse_script: Invalid placement format for a script in file '%%s', line '%%d'. Skipping the rest of file...\\n * w1=%%s\\n * w2=%%s\\n * w3=%%s\\n * w4=%%s\\n\");\n"
+		"    \" > ShowError(\"npc_parse_script: Invalid NPC facing direction '%%d' in file '%%s', line '%%d'.\\n\");\n"
 		"    \" > ShowError(\"npc_parse_script: Missing left curly ',{' in file '%%s', line '%%d'. Skipping the rest of the file.\\n * w1=%%s\\n * w2=%%s\\n * w3=%%s\\n * w4=%%s\\n\");\n"
 		"    \" > ShowWarning(\"npc_parse_script: duplicate event %%s::%%s in file '%%s'.\\n\");\n"
+		"    let errorformat .= ''\n"
+		"    \" from npc_duplicate_script_sub\n"
+		"    \" > ShowWarning(\"npc_parse_duplicate: duplicate event %%s::%%s in file '%%s'.\\n\");\n"
 		"    let errorformat .= ''\n"
 		"    \" from npc_parse_duplicate\n"
 		"    \" > ShowError(\"npc_parse_script: bad duplicate name in file '%%s', line '%%d': %%s\\n\");\n"
 		"    \" > ShowError(\"npc_parse_script: original npc not found for duplicate in file '%%s', line '%%d': %%s\\n\");\n"
 		"    \" > ShowError(\"npc_parse_duplicate: Invalid placement format for duplicate in file '%%s', line '%%d'. Skipping line...\\n * w1=%%s\\n * w2=%%s\\n * w3=%%s\\n * w4=%%s\\n\");\n"
+		"    \" > ShowError(\"npc_parse_duplicate: Invalid NPC facing direction '%%d' in file '%%s', line '%%d'.\\n\");\n"
 		"    \" > ShowError(\"npc_parse_duplicate: out-of-bounds coordinates (\\\"%%s\\\",%%d,%%d), map is %%dx%%d, in file '%%s', line '%%d'\\n\");\n"
 		"    \" > ShowError(\"npc_parse_duplicate: Invalid span format for duplicate warp in file '%%s', line '%%d'. Skipping line...\\n * w1=%%s\\n * w2=%%s\\n * w3=%%s\\n * w4=%%s\\n\");\n"
-		"    \" > ShowWarning(\"npc_parse_duplicate: duplicate event %%s::%%s in file '%%s'.\\n\");\n"
 		"    let errorformat .= ''\n"
 		"    \" from npc_parse_function\n"
 		"    \" > ShowError(\"npc_parse_function: Missing left curly '%%%%TAB%%%%{' in file '%%s', line '%%d'. Skipping the rest of the file.\\n * w1=%%s\\n * w2=%%s\\n * w3=%%s\\n * w4=%%s\\n\");\n"
@@ -667,8 +677,11 @@ void do_vimsyntaxgen(void)
 		"    \" > ShowError(\"npc_parse_mob: Invalid ai %%d for mob ID %%d in file '%%s', line '%%d'.\\n\");\n"
 		"    \" > ShowError(\"npc_parse_mob: Invalid level %%d for mob ID %%d in file '%%s', line '%%d'.\\n\");\n"
 		"    \" > ShowError(\"npc_parse_mob: Invalid spawn delays %%u %%u in file '%%s', line '%%d'.\\n\");\n"
-		"    \" > ShowError(\"npc_parse_mob: Invalid dataset for monster ID %%d in file '%%s', line '%%d'.\\n\");\n");
+		"    \" > ShowError(\"npc_parse_mob: Invalid dataset for monster ID %%d in file '%%s', line '%%d'.\\n\");\n"
+		"    let errorformat .= ''\n");
 	fprintf(local.fp,
+		"    \" from npc_parse_unknown_mapflag\n"
+		"    \" > ShowError(\"npc_parse_mapflag: unrecognized mapflag '%%s' in file '%%s', line '%%d'.\\n\");\n"
 		"    let errorformat .= ''\n"
 		"    \" from npc_parse_mapflag\n"
 		"    \" > ShowError(\"npc_parse_mapflag: Invalid mapflag definition in file '%%s', line '%%d'.\\n * w1=%%s\\n * w2=%%s\\n * w3=%%s\\n * w4=%%s\\n\");\n"
@@ -676,6 +689,8 @@ void do_vimsyntaxgen(void)
 		"    \" > ShowWarning(\"npc_parse_mapflag: Specified save point map '%%s' for mapflag 'nosave' not found in file '%%s', line '%%d', using 'SavePoint'.\\n * w1=%%s\\n * w2=%%s\\n * w3=%%s\\n * w4=%%s\\n\");\n"
 		"    \" > ShowWarning(\"npc_parse_mapflag: You can't set PvP and GvG flags for the same map! Removing GvG flags from %%s in file '%%s', line '%%d'.\\n\");\n"
 		"    \" > ShowWarning(\"npc_parse_mapflag: You can't set PvP and BattleGround flags for the same map! Removing BattleGround flag from %%s in file '%%s', line '%%d'.\\n\");\n"
+		"    \" > ShowWarning(\"npc_parse_mapflag: You can't set PvP and GvG flags for the same map! Removing PvP flag from %%s in file '%%s', line '%%d'.\\n\");\n"
+		"    \" > ShowWarning(\"npc_parse_mapflag: You can't set GvG and BattleGround flags for the same map! Removing BattleGround flag from %%s in file '%%s', line '%%d'.\\n\");\n"
 		"    \" > ShowWarning(\"npc_parse_mapflag: You can't set PvP and BattleGround flags for the same map! Removing PvP flag from %%s in file '%%s', line '%%d'.\\n\");\n"
 		"    \" > ShowWarning(\"npc_parse_mapflag: You can't set GvG and BattleGround flags for the same map! Removing GvG flag from %%s in file '%%s', line '%%d'.\\n\");\n"
 		"    \" > ShowWarning(\"npc_parse_mapflag: Missing 5th param for 'adjust_unit_duration' flag! removing flag from %%s in file '%%s', line '%%d'.\\n\")\n"
@@ -685,9 +700,13 @@ void do_vimsyntaxgen(void)
 		"    \" > ShowWarning(\"npc_parse_mapflag: Unknown skill (%%s) for 'adjust_skill_damage' flag! removing flag from %%s in file '%%s', line '%%d'.\\n\");\n"
 		"    \" > ShowWarning(\"npc_parse_mapflag: Invalid modifier '%%d' for skill '%%s' for 'adjust_skill_damage' flag! removing flag from %%s in file '%%s', line '%%d'.\\n\");\n"
 		"    \" > ShowWarning(\"npc_parse_mapflag: Invalid zone '%%s'! removing flag from %%s in file '%%s', line '%%d'.\\n\");\n"
-		"    \" > ShowError(\"npc_parse_mapflag: unrecognized mapflag '%%s' in file '%%s', line '%%d'.\\n\");\n"
 		"    let errorformat .= ''\n"
 		"    \" from npc_parsesrcfile\n"
+		"    \" ShowError(\"npc_parsesrcfile: Unable to parse, probably a missing or extra TAB in file '%%s', line '%%d'. Skipping line...\\n * w1=%%s\\n * w2=%%s\\n * w3=%%s\\n * w4=%%s\\n\");\n"
+		"    let errorformat .= ''\n");
+	fprintf(local.fp,
+		"    \" from npc_parsesrcfile\n"
+		"    \" > ShowError(\"npc_parsesrcfile: Detected unsupported UTF-8 BOM in file '%%s'. Stopping (please consider using another character set.)\\n\");"
 		"    \" ShowError(\"npc_parsesrcfile: Parse error in file '%%s', line '%%d'. Stopping...\\n\");\n"
 		"    \" ShowWarning(\"npc_parsesrcfile: w1 truncated, too much data (%%d) in file '%%s', line '%%d'.\\n\");\n"
 		"    \" ShowWarning(\"npc_parsesrcfile: w2 truncated, too much data (%%d) in file '%%s', line '%%d'.\\n\");\n"
@@ -701,8 +720,7 @@ void do_vimsyntaxgen(void)
 		"    \" for ENABLE_CASE_CHECK\n"
 		"    let errorformat .=\n"
 		"        \\ '[%%trror]: %%m (in ''%%f'')%%.%%#,'\n"
-		"\n");
-	fprintf(local.fp,
+		"\n"
 		"    let errorformat .=\n"
 		"        \\ '%%E[%%trror]: %%.script error in file ''%%f'' line %%l column %%c,%%Z%%m,' .\n"
 		"        \\ '%%W[%%tarning]: script error in file ''%%f'' line %%l column %%c,%%Z%%m,' .\n"
@@ -712,7 +730,8 @@ void do_vimsyntaxgen(void)
 		"        \\ '[%%tarning]: %%m,' .\n"
 		"        \\ '%%-G %%.%%#,' .\n"
 		"        \\ '%%-G* %%.%%#,' .\n"
-		"        \\ '%%m,'\n"
+		"        \\ '%%m,'\n");
+	fprintf(local.fp,
 		"\n"
 		"    \"if exists('g:syntastic_"SYNTAXLANGUAGE"_errorformat')\n"
 		"    \"    let errorformat = g:syntastic_"SYNTAXLANGUAGE"_errorformat\n"
