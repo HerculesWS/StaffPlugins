@@ -23,22 +23,24 @@
  * there will be another 10% chance for it to drop 4 instead of 3, and if that 10% succeeds, there will be a 5% chance to drop 5 instead of 4.
  * - MvP drops are not affected
  * - Items looted by monsters are not affected
- **/
+ */
 
 HPExport struct hplugin_info pinfo = {
-	"MobDropQty",	// Plugin name
-	SERVER_TYPE_MAP,// Which server types this plugin works with?
-	"0.1",			// Plugin version
-	HPM_VERSION,	// HPM Version (don't change, macro is automatically updated)
+	"MobDropQty",    // Plugin name
+	SERVER_TYPE_MAP, // Which server types this plugin works with?
+	"0.1",           // Plugin version
+	HPM_VERSION,     // HPM Version (don't change, macro is automatically updated)
 };
 
 
 /**
  * Our pre-hook to mob->setdropitem
  **/
-struct item_drop *mob_setdropitem_pre(int *nameid, int *qty, struct item_data *data) {
-	if( data ) {/* we only care about the areas that send it as non-NULL */
-		switch( data->type ) {
+struct item_drop *mob_setdropitem_pre(int *nameid, int *qty, struct item_data *data)
+{
+	if (data != NULL) {
+		/* we only care about the areas that send it as non-NULL */
+		switch (data->type) {
 			/* uncomment those you wanna affect, don't even try adding gear or non-stackable types -- they are not meant to have qty higher than 1! */
 			//case IT_HEALING:
 			//case IT_USABLE:
@@ -48,16 +50,16 @@ struct item_drop *mob_setdropitem_pre(int *nameid, int *qty, struct item_data *d
 			//case IT_CASH:
 			case IT_ETC:
 				/* Feel free to modify the formula here! */
-				if( rand()%100 > 50 ) /* if rand > 50, break and do not affect the qty */
+				if (rand()%100 > 50) /* if rand > 50, break and do not affect the qty */
 					break;
 				*qty += 1;//from 1 to 2
-				if( rand()%100 > 25 ) /* if rand > 25, break and do not affect the qty further */
+				if (rand()%100 > 25) /* if rand > 25, break and do not affect the qty further */
 					break;
 				*qty += 1;//from 2 to 3
-				if( rand()%100 > 10 ) /* if rand > 10, break and do not affect the qty further */
+				if (rand()%100 > 10) /* if rand > 10, break and do not affect the qty further */
 					break;
 				*qty += 1;//from 3 to 4
-				if( rand()%100 > 5 ) /* if rand > 5, break and do not affect the qty further */
+				if (rand()%100 > 5) /* if rand > 5, break and do not affect the qty further */
 					break;
 				*qty += 1;//from 4 to 5
 				break;
@@ -69,7 +71,8 @@ struct item_drop *mob_setdropitem_pre(int *nameid, int *qty, struct item_data *d
 /**
  * We started!
  **/
-HPExport void plugin_init (void) {
+HPExport void plugin_init(void)
+{
 	/* lets hook! */
-	addHookPre("mob->setdropitem",mob_setdropitem_pre);
+	addHookPre("mob->setdropitem", mob_setdropitem_pre);
 }

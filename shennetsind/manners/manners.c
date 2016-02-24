@@ -3,9 +3,9 @@
 // Sample Hercules Plugin
 
 #include "common/hercules.h"
+#include "common/db.h"
 #include "common/memmgr.h"
 #include "common/mmo.h"
-#include "common/socket.h"
 #include "common/strlib.h"
 #include "map/atcommand.h"
 #include "map/clif.h"
@@ -23,41 +23,42 @@
  * Causes players not to be able to spell badwords blacklisted
  * Implements @reloadmanners
  * Implements 'mouthful' permission set, so individual groups can be set to bypass the filter.
- **/
+ */
 
 HPExport struct hplugin_info pinfo = {
-	"Manners",		// Plugin name
-	SERVER_TYPE_MAP,// Which server types this plugin works with?
-	"0.2",			// Plugin version
-	HPM_VERSION,	// HPM Version (don't change, macro is automatically updated)
+	"Manners",       // Plugin name
+	SERVER_TYPE_MAP, // Which server types this plugin works with?
+	"0.2",           // Plugin version
+	HPM_VERSION,     // HPM Version (don't change, macro is automatically updated)
 };
 
 /* our globalz */
-char **badlist = NULL;
-unsigned int badlistcount = 0;
-unsigned int mouthful_mask = UINT_MAX - 1;
+VECTOR_DECL(char *) badlist;
+uint32 mouthful_mask = UINT_MAX - 1;
 
 /**
  * Woohooo, lets teach those badmouthing players a lesson!
  **/
-bool clif_process_message_post(bool retVal, struct map_session_data *sd, int *format, char **name_, size_t *namelen_, char **message_, size_t *messagelen_) {
-	char *message = *message_;
-	unsigned int i;
+bool clif_process_message_post(bool retVal, struct map_session_data *sd, int *format, char **name_, size_t *namelen_, char **message_, size_t *messagelen_)
+{
+	const char *message = *message_;
+	int i;
 
 	/* don't bother! */
-	if( !retVal || !message )
+	if (!retVal || message == NULL)
 		return false;
 
 	/* Can this user skip? */
-	if( !badlistcount || pc_has_permission(sd,mouthful_mask) )
+	if (VECTOR_LENGTH(badlist) == 0 || pc_has_permission(sd, mouthful_mask))
 		return true;
 
 	/* Lets go! */
-	for(i = 0; i < badlistcount; i++) {
-		if( stristr(message,badlist[i]) ) {
+	for (i = 0; i < VECTOR_LENGTH(badlist); i++) {
+		const char *badword = VECTOR_INDEX(badlist, i);
+		if (stristr(message, badword) != NULL) {
 			char output[254];
-			sprintf(output,"Thou shall not utter '%s'!",badlist[i]);
-			clif->messagecolor_self(sd->fd,COLOR_RED,output);
+			sprintf(output,"Thou shall not utter '%s'!", badword);
+			clif->messagecolor_self(sd->fd, COLOR_RED, output);
 			return false;
 		}
 	}
@@ -69,44 +70,39 @@ bool clif_process_message_post(bool retVal, struct map_session_data *sd, int *fo
 /**
  * for shutdown & reload
  **/
-void clean_manners(void) {
-	unsigned int i;
-
-	for(i = 0; i < badlistcount; i++) {
-		if( badlist[i] )
-			aFree(badlist[i]);
-	}
-	if( badlist )
-		aFree(badlist);
-
-	badlistcount = 0;
-	badlist = NULL;
+void clean_manners(void)
+{
+	while (VECTOR_LENGTH(badlist) > 0)
+		aFree(VECTOR_POP(badlist));
+	VECTOR_CLEAR(badlist);
 }
+
 /**
  * conf/manners.txt
  **/
-void load_manners(void) {
-	FILE* fp;
+void load_manners(void)
+{
+	FILE *fp;
 
 	clean_manners();
 
-	if ((fp=fopen("conf/manners.txt","r"))) {
+	if ((fp=fopen("conf/manners.txt","r")) != NULL) {
 		char line[1024], param[1024];
 
-		while(fgets(line, sizeof(line), fp)) {
+		while (fgets(line, sizeof(line), fp)) {
 			/* we skip the baaaars! and the blaaanks */
-			if (( line[0] == '/' && line[1] == '/' ) || line[0] == '\n' || line[1] == '\n' )
+			if ((line[0] == '/' && line[1] == '/') || line[0] == '\n' || line[1] == '\n')
 				continue;
 
 			/* to strip the crap out, laaazy! */
 			if (sscanf(line, "%1023s", param) != 1)
 				continue;
 
-			RECREATE(badlist, char *, ++badlistcount);
-			badlist[badlistcount - 1] = aStrdup(param);
+			VECTOR_ENSURE(badlist, 1, 1);
+			VECTOR_PUSH(badlist, aStrdup(param));
 		}
 		fclose(fp);
-		ShowStatus("Done reading '"CL_WHITE"%u"CL_RESET"' entries in '"CL_WHITE"manners.txt"CL_RESET"'.\n", badlistcount);
+		ShowStatus("Done reading '"CL_WHITE"%d"CL_RESET"' entries in '"CL_WHITE"manners.txt"CL_RESET"'.\n", VECTOR_LENGTH(badlist));
 	} else {
 		ShowError("Failed to load 'conf/manners.txt'!\n");
 	}
@@ -114,7 +110,8 @@ void load_manners(void) {
 /**
  * Our @reloadmanners
  ***/
-ACMD(reloadmanners) {
+ACMD(reloadmanners)
+{
 	load_manners();
 	clif->message(fd,"Manners reloaded!");
 
@@ -124,7 +121,8 @@ ACMD(reloadmanners) {
 /**
  * We started!
  **/
-HPExport void plugin_init (void) {
+HPExport void plugin_init(void)
+{
 	/* lets add our command! */
 	addAtcommand("reloadmanners",reloadmanners);
 
@@ -134,11 +132,13 @@ HPExport void plugin_init (void) {
 	/* lets add our permission */
 	addGroupPermission("mouthful",mouthful_mask);
 
+	VECTOR_INIT(badlist);
 	load_manners();
 }
 /**
  * we are going down!
  **/
-HPExport void plugin_final (void) {
+HPExport void plugin_final(void)
+{
 	clean_manners();
 }

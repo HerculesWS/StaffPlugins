@@ -24,10 +24,10 @@
 /* 'bonus bCoolDownRate,-50;' = 5000 (5s) (-50%) */
 
 HPExport struct hplugin_info pinfo = {
-	"bCoolDownRate",// Plugin name
-	SERVER_TYPE_MAP,// Which server types this plugin works with?
-	"0.1",          // Plugin version
-	HPM_VERSION,    // HPM Version (don't change, macro is automatically updated)
+	"bCoolDownRate", // Plugin name
+	SERVER_TYPE_MAP, // Which server types this plugin works with?
+	"0.1",           // Plugin version
+	HPM_VERSION,     // HPM Version (don't change, macro is automatically updated)
 };
 
 int bCoolDownRateID = -1;
@@ -37,25 +37,27 @@ struct s_cooldown_rate {
 };
 
 /* to check for the bonus */
-int skill_blockpc_start_preHook(struct map_session_data *sd, uint16 *skill_id, int *tick, bool *load) {
-	struct s_cooldown_rate *data;
+int skill_blockpc_start_preHook(struct map_session_data *sd, uint16 *skill_id, int *tick)
+{
+	const struct s_cooldown_rate *data;
 
-	if (*tick > 1 && sd && (data = getFromMSD(sd,0)) != NULL) {
-		if( data->rate != 100 )
+	if (*tick > 1 && sd != NULL && (data = getFromMSD(sd,0)) != NULL) {
+		if (data->rate != 100)
 			*tick = *tick * data->rate / 100;
 	}
 	return 1;/* doesn't matter */
 }
 
 /* to set the bonus */
-int pc_bonus_preHook(struct map_session_data *sd,int *type,int *val) {
+int pc_bonus_preHook(struct map_session_data *sd, int *type, int *val)
+{
 	if (*type == bCoolDownRateID) {
 		struct s_cooldown_rate *data;
 
-		if( !(data = getFromMSD(sd,0)) ) {/* don't have, create */
-			CREATE(data,struct s_cooldown_rate,1);/* alloc */
+		if ((data = getFromMSD(sd,0)) == NULL) {/* don't have, create */
+			CREATE(data, struct s_cooldown_rate, 1);/* alloc */
 			data->rate = 100;/* 100% -- default */
-			addToMSD(sd,data,0,true);/* link to sd */
+			addToMSD(sd, data, 0, true);/* link to sd */
 		}
 		data->rate += *val;
 
@@ -65,24 +67,25 @@ int pc_bonus_preHook(struct map_session_data *sd,int *type,int *val) {
 	return 0;
 }
 /* to reset the bonus on recalc */
-int status_calc_pc_preHook(struct map_session_data* sd, bool *first) {
+int status_calc_pc_preHook(struct map_session_data *sd, enum e_status_calc_opt *opt)
+{
 	struct s_cooldown_rate *data;
 
-	if( (data = getFromMSD(sd,0)) ) {
+	if ((data = getFromMSD(sd,0)) != NULL) {
 		data->rate = 100;//100% -- default
 	}
 	return 1;/* doesn't matter */
 }
 
-HPExport void plugin_init(void) {
+HPExport void plugin_init(void)
+{
 	/* grab a unique bonus ID for us */
 	bCoolDownRateID = map->get_new_bonus_id();
 	/* set constant 'bCoolDownRate', and set value to bCoolDownRateID */
-	script->set_constant("bCoolDownRate", bCoolDownRateID, false);
+	script->set_constant("bCoolDownRate", bCoolDownRateID, false, false);
 
 	/* hook */
 	addHookPre("skill->blockpc_start",skill_blockpc_start_preHook);
 	addHookPre("pc->bonus",pc_bonus_preHook);
 	addHookPre("status->calc_pc_",status_calc_pc_preHook);
-
 }
