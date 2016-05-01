@@ -12,6 +12,7 @@
 #include "map/skill.h"
 #include "map/status.h"
 
+#include "plugins/HPMHooking.h"
 #include "common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
 
 #include <stdio.h>
@@ -37,11 +38,11 @@ struct s_cooldown_rate {
 };
 
 /* to check for the bonus */
-int skill_blockpc_start_preHook(struct map_session_data *sd, uint16 *skill_id, int *tick)
+int skill_blockpc_start_preHook(struct map_session_data **sd, uint16 *skill_id, int *tick)
 {
 	const struct s_cooldown_rate *data;
 
-	if (*tick > 1 && sd != NULL && (data = getFromMSD(sd,0)) != NULL) {
+	if (*tick > 1 && sd != NULL && (data = getFromMSD(*sd, 0)) != NULL) {
 		if (data->rate != 100)
 			*tick = *tick * data->rate / 100;
 	}
@@ -49,15 +50,15 @@ int skill_blockpc_start_preHook(struct map_session_data *sd, uint16 *skill_id, i
 }
 
 /* to set the bonus */
-int pc_bonus_preHook(struct map_session_data *sd, int *type, int *val)
+int pc_bonus_preHook(struct map_session_data **sd, int *type, int *val)
 {
 	if (*type == bCoolDownRateID) {
 		struct s_cooldown_rate *data;
 
-		if ((data = getFromMSD(sd,0)) == NULL) {/* don't have, create */
+		if ((data = getFromMSD(*sd, 0)) == NULL) {/* don't have, create */
 			CREATE(data, struct s_cooldown_rate, 1);/* alloc */
 			data->rate = 100;/* 100% -- default */
-			addToMSD(sd, data, 0, true);/* link to sd */
+			addToMSD(*sd, data, 0, true);/* link to sd */
 		}
 		data->rate += *val;
 
@@ -67,11 +68,11 @@ int pc_bonus_preHook(struct map_session_data *sd, int *type, int *val)
 	return 0;
 }
 /* to reset the bonus on recalc */
-int status_calc_pc_preHook(struct map_session_data *sd, enum e_status_calc_opt *opt)
+int status_calc_pc_preHook(struct map_session_data **sd, enum e_status_calc_opt *opt)
 {
 	struct s_cooldown_rate *data;
 
-	if ((data = getFromMSD(sd,0)) != NULL) {
+	if ((data = getFromMSD(*sd,0)) != NULL) {
 		data->rate = 100;//100% -- default
 	}
 	return 1;/* doesn't matter */
@@ -85,7 +86,7 @@ HPExport void plugin_init(void)
 	script->set_constant("bCoolDownRate", bCoolDownRateID, false, false);
 
 	/* hook */
-	addHookPre("skill->blockpc_start",skill_blockpc_start_preHook);
-	addHookPre("pc->bonus",pc_bonus_preHook);
-	addHookPre("status->calc_pc_",status_calc_pc_preHook);
+	addHookPre(skill, blockpc_start, skill_blockpc_start_preHook);
+	addHookPre(pc, bonus, pc_bonus_preHook);
+	addHookPre(status, calc_pc_, status_calc_pc_preHook);
 }
