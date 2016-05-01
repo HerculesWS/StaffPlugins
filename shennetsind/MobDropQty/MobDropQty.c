@@ -7,6 +7,7 @@
 #include "map/itemdb.h"
 #include "map/mob.h"
 
+#include "plugins/HPMHooking.h"
 #include "common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
 
 #include <stdio.h>
@@ -36,11 +37,11 @@ HPExport struct hplugin_info pinfo = {
 /**
  * Our pre-hook to mob->setdropitem
  **/
-struct item_drop *mob_setdropitem_pre(int *nameid, int *qty, struct item_data *data)
+struct item_drop *mob_setdropitem_pre(int *nameid, int *qty, struct item_data **data)
 {
 	if (data != NULL) {
 		/* we only care about the areas that send it as non-NULL */
-		switch (data->type) {
+		switch ((*data)->type) {
 			/* uncomment those you wanna affect, don't even try adding gear or non-stackable types -- they are not meant to have qty higher than 1! */
 			//case IT_HEALING:
 			//case IT_USABLE:
@@ -74,5 +75,5 @@ struct item_drop *mob_setdropitem_pre(int *nameid, int *qty, struct item_data *d
 HPExport void plugin_init(void)
 {
 	/* lets hook! */
-	addHookPre("mob->setdropitem", mob_setdropitem_pre);
+	addHookPre(mob, setdropitem, mob_setdropitem_pre);
 }
