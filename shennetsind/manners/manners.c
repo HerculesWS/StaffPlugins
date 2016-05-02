@@ -11,6 +11,7 @@
 #include "map/clif.h"
 #include "map/pc.h"
 
+#include "plugins/HPMHooking.h"
 #include "common/HPMDataCheck.h" /* should always be the last file included! (if you don't make it last, it'll intentionally break compile time) */
 
 #include <stdio.h>
@@ -39,17 +40,17 @@ uint32 mouthful_mask = UINT_MAX - 1;
 /**
  * Woohooo, lets teach those badmouthing players a lesson!
  **/
-bool clif_process_message_post(bool retVal, struct map_session_data *sd, int *format, char **name_, size_t *namelen_, char **message_, size_t *messagelen_)
+bool pc_process_chat_message_pre(struct map_session_data **sd, const char **message_)
 {
 	const char *message = *message_;
 	int i;
 
 	/* don't bother! */
-	if (!retVal || message == NULL)
+	if (message == NULL)
 		return false;
 
 	/* Can this user skip? */
-	if (VECTOR_LENGTH(badlist) == 0 || pc_has_permission(sd, mouthful_mask))
+	if (VECTOR_LENGTH(badlist) == 0 || pc_has_permission(*sd, mouthful_mask))
 		return true;
 
 	/* Lets go! */
@@ -58,7 +59,8 @@ bool clif_process_message_post(bool retVal, struct map_session_data *sd, int *fo
 		if (stristr(message, badword) != NULL) {
 			char output[254];
 			sprintf(output,"Thou shall not utter '%s'!", badword);
-			clif->messagecolor_self(sd->fd, COLOR_RED, output);
+			clif->messagecolor_self((*sd)->fd, COLOR_RED, output);
+			hookStop();
 			return false;
 		}
 	}
@@ -127,7 +129,7 @@ HPExport void plugin_init(void)
 	addAtcommand("reloadmanners",reloadmanners);
 
 	/* lets hook! */
-	addHookPost("clif->process_message",clif_process_message_post);
+	addHookPre(pc, process_chat_message, pc_process_chat_message_pre);
 
 	/* lets add our permission */
 	addGroupPermission("mouthful",mouthful_mask);
