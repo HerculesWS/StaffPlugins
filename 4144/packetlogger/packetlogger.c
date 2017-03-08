@@ -2,8 +2,7 @@
  * This file is part of Hercules.
  * http://herc.ws - http://github.com/HerculesWS/Hercules
  *
- * Copyright (C) 2014-2016  Hercules Dev Team
- * Copyright (C) 2016  Andrei Karas
+ * Copyright (C) 2014-2015  Hercules Dev Team
  *
  * Hercules is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,11 +48,21 @@ HPExport struct hplugin_info pinfo = {
     HPM_VERSION,         // HPM Version (don't change, macro is automatically updated)
 };
 
-void dump_data(FILE *file, int fd, int packet_len)
+void dump_rdata(FILE *file, int fd, int packet_len)
 {
     for (int f = 0; f < packet_len; f ++)
     {
         const unsigned int data = (unsigned int)RFIFOB(fd, f);
+        fprintf(file, "%05d 0x%02x %5u %c\n", f, data, data, (int)data);
+    }
+    fprintf(file, "-----------------------------------\n");
+}
+
+void dump_wdata(FILE *file, int fd, int packet_len)
+{
+    for (int f = 0; f < packet_len; f ++)
+    {
+        const unsigned int data = (unsigned int)WFIFOB(fd, f);
         fprintf(file, "%05d 0x%02x %5u %c\n", f, data, data, (int)data);
     }
     fprintf(file, "-----------------------------------\n");
@@ -71,8 +80,15 @@ void show_time(FILE *file)
 void dump_client_packet(FILE *file, int fd, int packet_len)
 {
     unsigned int packet_id = RFIFOW(fd, 0);
-    fprintf(file, "client packet: 0x%x %u, len: %d\n", packet_id, packet_id, packet_len);
-    dump_data(file, fd, packet_len);
+    fprintf(file, "PACKETVER: %d\nClient packet: 0x%x %u, len: %d\n", PACKETVER, packet_id, packet_id, packet_len);
+    dump_rdata(file, fd, packet_len);
+}
+
+void dump_server_packet(FILE *file, int fd, int packet_len)
+{
+    unsigned int packet_id = WFIFOW(fd, 0);
+    fprintf(file, "PACKETVER: %d\nServer packet: 0x%x %u, len: %d\n", PACKETVER, packet_id, packet_id, packet_len);
+    dump_wdata(file, fd, packet_len);
 }
 
 void dump_client_map_packet(FILE *file, int fd, unsigned int packet_id, int packet_len, const struct s_packet_db *packet)
@@ -80,21 +96,21 @@ void dump_client_map_packet(FILE *file, int fd, unsigned int packet_id, int pack
     if (packet_id > 0 && packet_id <= MAX_PACKET_DB)
     {
         if (packet->func == NULL)
-            fprintf(file, "client packet: 0x%x %u, len: %5d, Missing function!\n", packet_id, packet_id, packet_len);
+            fprintf(file, "PACKETVER: %d\nClient packet: 0x%x %u, len: %5d, Missing function!\n", PACKETVER, packet_id, packet_id, packet_len);
         else
-            fprintf(file, "client packet: 0x%x %u, len: %5d, function: %s\n", packet_id, packet_id, packet_len, packet_names[packet_id]);
+            fprintf(file, "PACKETVER: %d\nClient packet: 0x%x %u, len: %5d, function: %s\n", PACKETVER, packet_id, packet_id, packet_len, packet_names[packet_id]);
     }
     else
     {
-        fprintf(file, "client packet: 0x%x %u, len: %5d, Wrong packet id!\n", packet_id, packet_id, packet_len);
+        fprintf(file, "PACKETVER: %d\nClient packet: 0x%x %u, len: %5d, Wrong packet id!\n", PACKETVER, packet_id, packet_id, packet_len);
     }
-    dump_data(file, fd, packet_len);
+    dump_rdata(file, fd, packet_len);
 }
 
 void dump_client_map_error_packet(FILE *file, int fd, unsigned int packet_id, int packet_len)
 {
-    fprintf(file, "Unknown client packet: 0x%x %u, len: %5d\n", packet_id, packet_id, packet_len);
-    dump_data(file, fd, packet_len);
+    fprintf(file, "PACKETVER: %d\nUnknown client packet: 0x%x %u, len: %5d\n", PACKETVER, packet_id, packet_id, packet_len);
+    dump_rdata(file, fd, packet_len);
 }
 
 int lclif_parse_pre(int *fdPtr)
@@ -105,7 +121,7 @@ int lclif_parse_pre(int *fdPtr)
     if (packet_len < 2)
         return 0;
     char buf[100];
-    sprintf(buf, "log/login_%d.log", fd);
+    sprintf(buf, "log/login_%d_%d.log", PACKETVER, fd);
     FILE *file = fopen(buf, "a");
     if (file == NULL)
     {
@@ -126,7 +142,7 @@ int char_parse_char_pre(int *fdPtr)
     if (packet_len < 2)
         return 0;
     char buf[100];
-    sprintf(buf, "log/char_%d.log", fd);
+    sprintf(buf, "log/char_%d_%d.log", PACKETVER, fd);
     FILE *file = fopen(buf, "a");
     if (file == NULL)
     {
@@ -157,7 +173,7 @@ int clif_parse_pre(int *fdPtr)
     const unsigned int cmd = parse_cmd_func(fd, sd);
 
     char buf[100];
-    sprintf(buf, "log/map_%d.log", fd);
+    sprintf(buf, "log/map_%d_%d.log", PACKETVER, fd);
     FILE *file = fopen(buf, "a");
     if (file == NULL)
     {
@@ -197,6 +213,48 @@ int clif_parse_pre(int *fdPtr)
     return 0;
 }
 
+int sockt_wfifoset_pre(int *fdPtr, size_t *lenPtr)
+{
+    const int fd = *fdPtr;
+    const size_t len = *lenPtr;
+    char buf[100];
+
+    struct socket_data* s;
+
+    if (!sockt->session_is_valid(fd))
+        return 0;
+    s = sockt->session[fd];
+    if (s == NULL || s->wdata == NULL)
+        return 0;
+
+    // we have written len bytes to the buffer already before calling WFIFOSET
+    if (s->wdata_size+len > s->max_wdata ||
+        len > 0xFFFF ||
+        len == 0)
+    {
+        return 0;
+    }
+
+    if (SERVER_TYPE == SERVER_TYPE_LOGIN)
+        sprintf(buf, "log/login_%d_%d.log", PACKETVER, fd);
+    else if (SERVER_TYPE == SERVER_TYPE_CHAR)
+        sprintf(buf, "log/char_%d_%d.log", PACKETVER, fd);
+    else if (SERVER_TYPE == SERVER_TYPE_MAP)
+        sprintf(buf, "log/map_%d_%d.log", PACKETVER, fd);
+    FILE *file = fopen(buf, "a");
+    if (file == NULL)
+    {
+        ShowError("Cant open log file %s\n", buf);
+        fclose(file);
+        return 1;
+    }
+    show_time(file);
+    dump_server_packet(file, fd, len);
+    fclose(file);
+
+    return 0;
+}
+
 #ifdef packet
 #undef packet
 #endif  // packet
@@ -231,6 +289,7 @@ HPExport void server_preinit(void)
         addHookPre(clif, parse, clif_parse_pre);
         load_functions();
     }
+    addHookPre(sockt, wfifoset, sockt_wfifoset_pre);
 }
 
 HPExport void plugin_init(void)
