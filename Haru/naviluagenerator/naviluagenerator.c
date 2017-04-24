@@ -1,5 +1,5 @@
-/*
- * Copyright (c) Hercules Dev Team
+/**
+ * Copyright (C) 2014-2017  Hercules Dev Team
  * Base author: Haru <haru@dotalux.com>
  * Adapted from an original version by Yommy
  *
@@ -24,6 +24,7 @@
 #include "common/db.h"
 #include "common/memmgr.h"
 #include "common/mmo.h"
+#include "common/nullpo.h"
 #include "common/strlib.h"
 #include "map/map.h"
 #include "map/mob.h"
@@ -89,6 +90,14 @@ struct walkpath_data_navi {
 
 /* begin 1:1 copy of various definitions and static functions from path.c */
 
+#define SET_OPEN 0
+#define SET_CLOSED 1
+
+#define DIR_NORTH 1
+#define DIR_WEST 2
+#define DIR_SOUTH 4
+#define DIR_EAST 8
+
 /// @name Structures and defines for A* pathfinding
 /// @{
 
@@ -124,13 +133,6 @@ static const unsigned char walk_choices [3][3] =
 };
 
 
-#define SET_OPEN 0
-#define SET_CLOSED 1
-
-#define DIR_NORTH 1
-#define DIR_WEST 2
-#define DIR_SOUTH 4
-#define DIR_EAST 8
 
 /// @name A* pathfinding related functions
 /// @{
@@ -139,10 +141,8 @@ static const unsigned char walk_choices [3][3] =
 /// Ensures there is enough space in array to store new element.
 static void heap_push_node(struct node_heap *heap, struct path_node *node)
 {
-#ifndef __clang_analyzer__ // TODO: Figure out why clang's static analyzer doesn't like this
 	BHEAP_ENSURE(*heap, 1, 256);
 	BHEAP_PUSH2(*heap, node, NODE_MINTOPCMP, swap_ptr);
-#endif // __clang_analyzer__
 }
 
 /// Updates path_node in the binary node_heap.
@@ -176,7 +176,7 @@ static int add_path(struct node_heap *heap, int16 x, int16 y, int g_cost, struct
 {
 	int i = calc_index(x, y);
 
-	if (tpused[i] && tpused[i] == 1+(x<<16 | y)) { // We processed this node before
+	if (tpused[i] != 0 && tpused[i] == 1+(x<<16 | y)) { // We processed this node before
 		if (g_cost < tp[i].g_cost) { // New path to this node is better than old one
 			// Update costs and parent
 			tp[i].g_cost = g_cost;
@@ -193,7 +193,7 @@ static int add_path(struct node_heap *heap, int16 x, int16 y, int g_cost, struct
 		return 0;
 	}
 
-	if (tpused[i]) // Index is already taken; see `tp` array FIXME for details
+	if (tpused[i] != 0) // Index is already taken; see `tp` array FIXME for details
 		return 1;
 
 	// New node
@@ -220,6 +220,8 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, const struct block_
 {
 	struct map_data *md;
 	struct walkpath_data_navi s_wpd;
+
+	Assert_retr(false, m >= 0 && m < map->count);
 
 	if (wpd == NULL)
 		wpd = &s_wpd; // use dummy output variable
@@ -399,10 +401,10 @@ void atcommand_createnavigationlua_sub_mob(FILE *fp, int m, const struct mob_db 
 	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, mob_global_idx);            // Global ID
 	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, mobinfo->mexp ? 301 : 300); // 300 = Normal, 301 = MVP
 #if CLIENTVER >= 20140000
-	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, (amount<<16)|mobinfo->vd.class_);
+	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, (amount<<16)|mobinfo->vd.class);
 	                                                                                   // Spawn amount << 16 | Mob class
 #else /* CLIENTVER < 20140000 */
-	fprintf(fp, OUT_INDENT OUT_INDENT "%u," OUT_SEPARATOR, mobinfo->vd.class_);        // Mob Class
+	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, mobinfo->vd.class);         // Mob Class
 #endif /* CLIENTVER */
 	fprintf(fp, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, mobinfo->jname);        // Mob Name
 	fprintf(fp, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, mobinfo->sprite);       // Sprite Name
@@ -445,7 +447,7 @@ void atcommand_createnavigationlua_sub_warp(FILE *fp_link, const struct npc_data
 	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, 200);                          // 200 = warp , 201 = npc script (free?), 202 = Kafra Dungeon Warp,
 	                                                                                           // 203 = Cool Event Dungeon Warp, 204 Kafra/Cool Event/Alberta warp,
 	                                                                                           // 205 = airport  (Currently we only support warps)
-	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, (nd->vd->class_ == WARP_CLASS) ? 99999 : (int)nd->vd->class_);
+	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, (nd->vd->class == WARP_CLASS) ? 99999 : nd->vd->class);
 	                                                                                           // sprite id, 99999 = warp portal
 	fprintf(fp_link, OUT_INDENT OUT_INDENT "\"%s_%s_%d\"," OUT_SEPARATOR, map->list[nd->bl.m].name, map->list[mnext].name, nlink);
 	                                                                                           // Name

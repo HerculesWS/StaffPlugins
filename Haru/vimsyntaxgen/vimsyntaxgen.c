@@ -2,8 +2,8 @@
  * Hercules Plugin
  * http://herc.ws - http://github.com/HerculesWS/StaffPlugins
  *
- * Copyright (C) 2013-2016  Hercules Dev Team
- * Copyright (C) 2013-2016  Haru <haru@dotalux.com>
+ * Copyright (C) 2013-2017  Hercules Dev Team
+ * Copyright (C) 2013-2017  Haru <haru@dotalux.com>
  *
  * This plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -156,6 +156,7 @@ void vimsyntaxgen_constdb(void)
 	vimsyntaxgen_flush(0);
 
 	fprintf(local.fp, "\" Hardcoded Constants (source)\n");
+	script->load_parameters();
 	script->hardcoded_constants();
 	vimsyntaxgen_flush(1);
 
@@ -206,7 +207,7 @@ void vimsyntaxgen_skilldb(void)
 
 	nullpo_retv(local.fp);
 
-	fprintf(local.fp, "\" Skills (db/"DBPATH"skill_db.txt)\n");
+	fprintf(local.fp, "\" Skills (db/"DBPATH"skill_db.conf)\n");
 	vimsyntaxgen_set(SYNKEYWORDPREFIX"hSkillId ", " ", "");
 	for (i = 1; i < MAX_SKILL_DB; i++) {
 		if (skill->dbs->db[i].name[0] != '\0')
@@ -221,7 +222,7 @@ void vimsyntaxgen_mobdb(void)
 
 	nullpo_retv(local.fp);
 
-	fprintf(local.fp, "\" Mobs (db/"DBPATH"mob_db.txt)\n");
+	fprintf(local.fp, "\" Mobs (db/"DBPATH"mob_db.conf)\n");
 	vimsyntaxgen_set(SYNKEYWORDPREFIX"hMobId ", " ", "");
 	for (i = 0; i < MAX_MOB_DB; i++) {
 		struct mob_db *md = mob->db(i);
@@ -279,6 +280,7 @@ struct cmd_info cmd_hDeprecated[] = {
 };
 struct cmd_info cmd_hStatement[] = {
 	CMD_PUSH("mes"),
+	CMD_PUSH("mesf"),
 	CMD_PUSH("select"),
 	CMD_PUSH("prompt"),
 	CMD_PUSH("getarg"),
@@ -295,6 +297,7 @@ struct cmd_info cmd_hStatement[] = {
 	CMD_PUSH("sleep2"),
 	CMD_PUSH("awake"),
 	CMD_PUSH("_"),
+	CMD_PUSH("_$"),
 };
 struct cmd_info *cmd_hDeprecatedExtra = NULL;
 int cmd_hDeprecatedExtra_count = 0;
@@ -433,7 +436,8 @@ void do_vimsyntaxgen(void)
 	 || !createdirectory(DIRECTORYNAME PATHSEP_STR "ftdetect")
 	 || !createdirectory(DIRECTORYNAME PATHSEP_STR "ftplugin")
 	 || !createdirectory(DIRECTORYNAME PATHSEP_STR "indent")
-	 || !createdirectory(DIRECTORYNAME PATHSEP_STR "syntastic")
+	 || !createdirectory(DIRECTORYNAME PATHSEP_STR "syntax_checkers") /* syntastic */
+	 || !createdirectory(DIRECTORYNAME PATHSEP_STR "syntax_checkers" PATHSEP_STR SYNTAXLANGUAGE) /* syntastic */
 	 || !createdirectory(DIRECTORYNAME PATHSEP_STR "syntax")
 	) {
 		ShowError("do_vimsyntaxgen: Unable to create output directory\n");
@@ -542,7 +546,7 @@ void do_vimsyntaxgen(void)
 
 	/* Syntastic syntax checker definition */
 
-	if ((local.fp = fopen(DIRECTORYNAME PATHSEP_STR "syntastic" PATHSEP_STR SYNTAXLANGUAGE".vim", "wt+")) == NULL) {
+	if ((local.fp = fopen(DIRECTORYNAME PATHSEP_STR "syntax_checkers" PATHSEP_STR SYNTAXLANGUAGE PATHSEP_STR SYNTAXLANGUAGE".vim", "wt+")) == NULL) {
 		ShowError("do_vimsyntaxgen: Unable to open syntastic output file\n");
 		return;
 	}
@@ -782,7 +786,7 @@ void do_vimsyntaxgen(void)
 
 	fprintf(local.fp,
 		"\" Allowed characters in a keyword\n"
-		"setlocal iskeyword=@,',_,a-z,A-Z,48-57\n"
+		"setlocal iskeyword=@,_,a-z,A-Z,48-57\n"
 		"\n"
 		"syn match	hVariable	display \"\\<\\%%(\\.\\?\\.@\\?\\|\\$\\|'\\|##\\?\\)\\I\\i*\\$\\?\\>\"\n"
 		"\n"
@@ -960,8 +964,6 @@ void do_vimsyntaxgen(void)
 		"syn match	hDefaultLabel	display \"OnTimer[0-9]\\+:\"me=e-1 contained\n"
 		"\" npc_trader_*\n"
 		"syn match	hDefaultLabel	display \"On\\%%(Count\\|Pay\\)Funds:\"me=e-1 contained\n"
-		"\" BUILDIN(cmdothernpc)\n"
-		"syn match	hDefaultLabel	display \"OnCommand\\i\\+:\"me=e-1 contained\n"
 		"\" script_defaults\n"
 		"syn match	hDefaultLabel	display \"OnPC\\%%(Die\\|Kill\\|Login\\|Logout\\|LoadMap\\|BaseLvUp\\|JobLvUp\\)Event:\"me=e-1 contained\n"
 		"syn match	hDefaultLabel	display \"OnNPCKillEvent:\"me=e-1 contained\n"
