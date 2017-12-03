@@ -447,7 +447,7 @@ void atcommand_createnavigationlua_sub_warp(FILE *fp_link, const struct npc_data
 	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, 200);                          // 200 = warp , 201 = npc script (free?), 202 = Kafra Dungeon Warp,
 	                                                                                           // 203 = Cool Event Dungeon Warp, 204 Kafra/Cool Event/Alberta warp,
 	                                                                                           // 205 = airport  (Currently we only support warps)
-	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, (nd->vd->class == WARP_CLASS) ? 99999 : nd->vd->class);
+	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, (nd->vd.class == WARP_CLASS) ? 99999 : nd->vd.class);
 	                                                                                           // sprite id, 99999 = warp portal
 	fprintf(fp_link, OUT_INDENT OUT_INDENT "\"%s_%s_%d\"," OUT_SEPARATOR, map->list[nd->bl.m].name, map->list[mnext].name, nlink);
 	                                                                                           // Name
