@@ -6,10 +6,9 @@ Hercules Staff Plugins : @MishimaHaruna Index
 Plugins
 -------
 
-### vimsyntaxgen
+### mapcache2txt
 
-Generates a syntax highlighter definition script for the Hercules scripting
-language, to be used with the vi/vim/gvim/MacVim text editor.
+Dumps mapcache files to a textual format for visual inspection.
 
 ### naviluagenerator
 
@@ -20,3 +19,8 @@ present in recent kRO clients.
 
 Script command to quit the mapserver, returning a chosen exit status to the OS.
 (this plugin was moved to the Hercules repository - only sample scripts are still here)
+
+### vimsyntaxgen
+
+Generates a syntax highlighter definition script for the Hercules scripting
+language, to be used with the vi/vim/gvim/MacVim text editor.
