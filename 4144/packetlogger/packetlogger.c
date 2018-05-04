@@ -270,6 +270,11 @@ void load_functions(void)
     if (id > 0 && id <= MAX_PACKET_DB) \
         packet_names[id] = #__VA_ARGS__;
 #include "map/packets.h"
+#ifdef PACKETVER_ZERO
+#include "map/packets_shuffle_zero.h"
+#else  // PACKETVER_ZERO
+#include "map/packets_shuffle_main.h"
+#endif  // PACKETVER_ZERO
 }
 
 #undef packet
