@@ -1,0 +1,3 @@
+[submodule "meko/hashtable"]
+	path = meko/hashtable
+	url = git://github.com/mekolat/hercules-hashtable.git
