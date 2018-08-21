@@ -20,6 +20,7 @@
 
 #include "common/hercules.h"
 #include "common/socket.h"
+#include "common/mmo.h"
 
 #include "login/lclif.h"
 
@@ -38,6 +39,10 @@
 #include <stdlib.h>
 
 #include "common/HPMDataCheck.h"
+
+#ifndef PACKETTYPE
+#define PACKETTYPE "unknown"
+#endif
 
 char *packet_names[MAX_PACKET_DB + 1];
 
@@ -121,7 +126,7 @@ int lclif_parse_pre(int *fdPtr)
     if (packet_len < 2)
         return 0;
     char buf[100];
-    sprintf(buf, "log/login_%d_%d.log", PACKETVER, fd);
+    sprintf(buf, "log/login_%d_" PACKETTYPE "_%d.log", PACKETVER, fd);
     FILE *file = fopen(buf, "a");
     if (file == NULL)
     {
@@ -270,8 +275,10 @@ void load_functions(void)
     if (id > 0 && id <= MAX_PACKET_DB) \
         packet_names[id] = #__VA_ARGS__;
 #include "map/packets.h"
-#ifdef PACKETVER_ZERO
+#if defined(PACKETVER_ZERO)
 #include "map/packets_shuffle_zero.h"
+#elif defined(PACKETVER_RE)
+#include "map/packets_shuffle_re.h"
 #else  // PACKETVER_ZERO
 #include "map/packets_shuffle_main.h"
 #endif  // PACKETVER_ZERO
