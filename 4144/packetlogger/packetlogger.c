@@ -21,6 +21,7 @@
 #include "common/hercules.h"
 #include "common/socket.h"
 #include "common/mmo.h"
+#include "common/packets.h"
 
 #include "login/lclif.h"
 
@@ -196,7 +197,7 @@ int clif_parse_pre(int *fdPtr)
         return 1;
     }
 
-    int packet_len = packet->len;
+    int packet_len = packets->db[cmd];
     if (packet_len == -1)
     {
         if (rest_len < 4 || rest_len > 32768)
@@ -218,7 +219,7 @@ int clif_parse_pre(int *fdPtr)
     return 0;
 }
 
-int sockt_wfifoset_pre(int *fdPtr, size_t *lenPtr)
+int sockt_wfifoset_pre(int *fdPtr, size_t *lenPtr, bool *validate)
 {
     const int fd = *fdPtr;
     const size_t len = *lenPtr;
@@ -233,7 +234,7 @@ int sockt_wfifoset_pre(int *fdPtr, size_t *lenPtr)
         return 0;
 
     // we have written len bytes to the buffer already before calling WFIFOSET
-    if (s->wdata_size+len > s->max_wdata ||
+    if (s->wdata_size + len > s->max_wdata ||
         len > 0xFFFF ||
         len == 0)
     {
@@ -271,7 +272,7 @@ void load_functions(void)
 {
     for (int f = 0; f <= MAX_PACKET_DB; f ++)
         packet_names[f] = "NULL";
-#define packet(id, b, ...) \
+#define packet(id, ...) \
     if (id > 0 && id <= MAX_PACKET_DB) \
         packet_names[id] = #__VA_ARGS__;
 #include "map/packets.h"
