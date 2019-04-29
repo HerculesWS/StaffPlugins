@@ -6,6 +6,14 @@ Hercules Staff Plugins : @4144 Index
 Plugins
 -------
 
-### packetlogger
+### packetlogger v1
 
-Log all incoming packets for login, char, map servers into log directory.
+Log all packets for login, char, map servers (including inter server packets) into log directory.
+
+Logged data in readable format with hex and dec values
+
+### packetlogger v2
+
+Log all packets between client and server in hex format into log directory.
+
+Logged data in hex format for parsers.

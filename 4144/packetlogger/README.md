@@ -1,14 +1,20 @@
 Hercules plugin: packetlogger
 =============================
 
-Log all incoming packets for login, char, map servers into log directory.
+Log all packets for login, char, map servers (including inter server packets) into log directory.
 
-File name format: SERVER_CON.log
+Logged data in readable format with hex and dec values
+
+File name format: SERVER_PACKETVERSION_TYPE_FD.log
 
 Where:
 
 SERVER is one of login, char, map.
 
-CON is connection number.
+PACKETVERSION is selected packet version in server
 
-Example: map_7.log
+TYPE is one of main, re, zero
+
+FD is connection number.
+
+Example: login_20190116_main_7.log
