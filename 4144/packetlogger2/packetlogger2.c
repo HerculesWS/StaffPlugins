@@ -31,7 +31,9 @@
 #include <stdlib.h>
 
 #include <time.h>
-#ifndef WIN32
+#ifdef WIN32
+#include <windows.h>
+#else
 #include <sys/time.h>
 #endif
 
@@ -55,6 +57,32 @@ HPExport struct hplugin_info pinfo = {
     "0.1",               // Plugin version
     HPM_VERSION,         // HPM Version (don't change, macro is automatically updated)
 };
+
+#ifdef WIN32
+// emulating gettimeofday on windows...
+// https://stackoverflow.com/questions/10905892/equivalent-of-gettimeday-for-windows
+
+int gettimeofday(struct timeval *tp, struct timezone *tzp)
+{
+    // Note: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
+    // This magic number is the number of 100 nanosecond intervals since January 1, 1601 (UTC)
+    // until 00:00:00 January 1, 1970
+    static const uint64 EPOCH = ((uint64_t)116444736000000000ULL);
+
+    SYSTEMTIME  system_time;
+    FILETIME    file_time;
+    uint64      time;
+
+    GetSystemTime(&system_time);
+    SystemTimeToFileTime(&system_time, &file_time);
+    time =  ((uint64)file_time.dwLowDateTime)      ;
+    time += ((uint64)file_time.dwHighDateTime) << 32;
+
+    tp->tv_sec  = (long)((time - EPOCH) / 10000000L);
+    tp->tv_usec = (long)(system_time.wMilliseconds * 1000);
+    return 0;
+}
+#endif
 
 static void packet_log(FILE *file, char *buf, int len, bool isSend)
 {
