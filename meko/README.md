@@ -9,3 +9,8 @@ Hercules Staff Plugins &mdash; meko Index
 > ### hercules-hashtable
 
 Exposes the built-in hashtable to the script engine to provide a key-value store.
+
+
+> ### hercules-reserved
+
+Allows to reserve char names with an SQL table.
