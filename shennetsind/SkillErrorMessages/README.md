@@ -14,4 +14,4 @@ becomes
 (%s being the skill name, %d the amount of spirit spheres)
 
 ***
-How to Install a Plugin: [Building a Plugin](http://herc.ws/wiki/HPM#Building_a_plugin)
+How to Install a Plugin: [Building a Plugin](https://github.com/HerculesWS/Hercules/wiki/Hercules-Plugin-Manager#building-a-plugin)
