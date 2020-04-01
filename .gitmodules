@@ -1,6 +1,8 @@
 [submodule "meko/hashtable"]
 	path = meko/hashtable
 	url = git://github.com/Helianthella/hercules-hashtable.git
+	branch = master
 [submodule "meko/reserved"]
 	path = meko/reserved
 	url = git://github.com/Helianthella/hercules-reserved.git
+	branch = master
