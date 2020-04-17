@@ -3,7 +3,7 @@
  * http://herc.ws - http://github.com/HerculesWS/Hercules
  *
  * Copyright (C) 2014-2015  Hercules Dev Team
- * Copyright (C) 2019  Andrei Karas (4144)
+ * Copyright (C) 2019-2020  Andrei Karas (4144)
  *
  * Hercules is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@
 #include "common/mmo.h"
 #include "common/memmgr.h"
 #include "common/nullpo.h"
+
+#include "map/pc.h"
 
 #include "plugins/HPMHooking.h"
 
@@ -221,6 +223,25 @@ static void socket_close_pre(int *fdPtr)
     }
 }
 
+static bool pc_authok_pre(struct map_session_data **sdPtr,
+                          int *login_id2Ptr,
+                          time_t *expiration_timePtr,
+                          int *group_idPtr,
+                          const struct mmo_charstatus **stPtr,
+                          bool *changing_mapserversPtr)
+{
+    struct map_session_data *sd = *sdPtr;
+    if (sd == NULL)
+        return false;
+    if (!sockt->session_is_valid(sd->fd))
+        return false;
+    struct SessionExt *data = getFromSession(sockt->session[sd->fd], 0);
+    nullpo_retr(false, data);
+    fprintf(data->file, "#account %d\n", sd->status.account_id);
+    fflush(data->file);
+    return true;
+}
+
 void (*socketCloseBack) (int fd) = NULL;
 
 HPExport void server_preinit(void)
@@ -229,6 +250,10 @@ HPExport void server_preinit(void)
     addHookPre(sockt, validateWfifo, socket_validateWfifo_pre);
     addHookPre(sockt, close, socket_close_pre);
     addHookPost(sockt, connect_client, sockt_connect_client_post);
+    if (SERVER_TYPE == SERVER_TYPE_MAP)
+    {
+        addHookPre(pc, authok, pc_authok_pre);
+    }
 }
 
 HPExport void plugin_init(void)
