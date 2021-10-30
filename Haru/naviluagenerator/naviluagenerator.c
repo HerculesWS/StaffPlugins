@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2017  Hercules Dev Team
+ * Copyright (C) 2014-2021 Hercules Dev Team
  * Base author: Haru <haru@dotalux.com>
  * Adapted from an original version by Yommy
  *
@@ -824,6 +824,7 @@ HPExport void server_preinit(void)
 
 HPExport void plugin_init(void)
 {
+	script->declare_conditional_feature("NAVILUAGENERATOR");
 	addCPCommand("server:tools:navigationlua", createnavigationlua);
 	addAtcommand("createnavigationlua", createnavigationlua);
 }
