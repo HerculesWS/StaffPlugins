@@ -824,7 +824,7 @@ HPExport void server_preinit(void)
 
 HPExport void plugin_init(void)
 {
-	script->declare_conditional_feature("NAVILUAGENERATOR");
+	script->declare_conditional_feature("NAVILUAGENERATOR", true);
 	addCPCommand("server:tools:navigationlua", createnavigationlua);
 	addAtcommand("createnavigationlua", createnavigationlua);
 }
