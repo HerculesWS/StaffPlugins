@@ -33,7 +33,7 @@ ACMD(debugcd)
 		return false;
 	}
 
-	if ((pl_sd = map->nick2sd(message)) == NULL) {
+	if ((pl_sd = map->nick2sd(message, true)) == NULL) {
 		clif->message(fd,"Character name not found");
 		return false;
 	}

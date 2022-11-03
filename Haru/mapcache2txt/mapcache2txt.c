@@ -2,7 +2,7 @@
 * This file is part of Hercules.
 * http://herc.ws - http://github.com/HerculesWS/Hercules
 *
-* Copyright (C) 2013-2015  Hercules Dev Team
+* Copyright (C) 2013-2022  Hercules Dev Team
 *
 * Hercules is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
 #include "common/memmgr.h"
 #include "common/nullpo.h"
 #include "common/showmsg.h"
+#include "common/strlib.h"
 #include "common/utils.h"
 #include "map/map.h"
 
@@ -337,7 +338,7 @@ static bool mcache_dump_mcache(const char *filename)
 		}
 	}
 
-	strncpy(mapdata.name, basename, sizeof mapdata.name);
+	safestrncpy(mapdata.name, basename, sizeof mapdata.name);
 
 	if (!mcache_readfromcache(&mapdata, filename)) {
 		ShowError("Unable to read mapcache for map '%s'.\n", basename);

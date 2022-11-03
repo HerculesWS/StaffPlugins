@@ -37,7 +37,7 @@ HPExport struct hplugin_info pinfo = {
 /**
  * Our pre-hook to mob->setdropitem
  **/
-struct item_drop *mob_setdropitem_pre(int *nameid, int *qty, struct item_data **data)
+struct item_drop *mob_setdropitem_pre(int *nameid, struct optdrop_group **options, int *qty, struct item_data **data)
 {
 	if (data != NULL) {
 		/* we only care about the areas that send it as non-NULL */

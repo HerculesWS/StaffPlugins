@@ -11,6 +11,7 @@
 #include "map/mob.h"
 #include "map/pc.h"
 #include "map/pet.h"
+#include "map/refine.h"
 #include "map/status.h"
 #include "map/storage.h"
 
@@ -70,7 +71,7 @@ ACMD(storeitem)
 		get_count = 1;
 	}
 
-	if ((pl_sd = map->nick2sd(character)) == NULL) {
+	if ((pl_sd = map->nick2sd(character, true)) == NULL) {
 		clif->message(fd, msg_fd(fd, 3)); // Character not found.
 		return false;
 	}

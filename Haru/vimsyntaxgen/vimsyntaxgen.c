@@ -2,8 +2,8 @@
  * Hercules Plugin
  * http://herc.ws - http://github.com/HerculesWS/StaffPlugins
  *
- * Copyright (C) 2013-2017  Hercules Dev Team
- * Copyright (C) 2013-2017  Haru <haru@dotalux.com>
+ * Copyright (C) 2013-2022  Hercules Dev Team
+ * Copyright (C) 2013-2022  Haru <haru@dotalux.com>
  *
  * This plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -152,7 +152,7 @@ void vimsyntaxgen_constdb(void)
 	/* Run */
 	fprintf(local.fp, "\" Constants (db/constants.conf)\n");
 	vimsyntaxgen_set(SYNKEYWORDPREFIX"hConstant ", " ", "");
-	script->read_constdb();
+	script->read_constdb(false);
 	vimsyntaxgen_flush(0);
 
 	fprintf(local.fp, "\" Hardcoded Constants (source)\n");
