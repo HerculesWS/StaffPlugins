@@ -164,7 +164,7 @@ void do_init_vendingstat(void)
 				"`card1` smallint(6) NOT NULL,"
 				"`card2` smallint(6) NOT NULL,"
 				"`card3` smallint(6) NOT NULL,"
-				"`amount` int(10) unsigned NOT NULL,"
+				"`amount` int(10) NOT NULL,"
 				"`price` int(10) unsigned NOT NULL)",
 				vendingstat_table)
 	) {
