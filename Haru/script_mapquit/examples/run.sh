@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2014 Hercules Dev Team
+# Copyright (c) 2014-2024 Hercules Dev Team
 # Base author: Haru <haru@dotalux.com>
 #
 # This file is part of the script_mapquit plugin for Hercules

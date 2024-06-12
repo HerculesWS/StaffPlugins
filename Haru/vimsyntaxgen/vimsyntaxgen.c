@@ -2,8 +2,8 @@
  * Hercules Plugin
  * http://herc.ws - http://github.com/HerculesWS/StaffPlugins
  *
- * Copyright (C) 2013-2022  Hercules Dev Team
- * Copyright (C) 2013-2022  Haru <haru@dotalux.com>
+ * Copyright (C) 2013-2024  Hercules Dev Team
+ * Copyright (C) 2013-2024  Haru <haru@dotalux.com>
  *
  * This plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

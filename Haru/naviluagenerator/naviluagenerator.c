@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2021 Hercules Dev Team
+ * Copyright (C) 2014-2024 Hercules Dev Team
  * Base author: Haru <haru@dotalux.com>
  * Adapted from an original version by Yommy
  *
