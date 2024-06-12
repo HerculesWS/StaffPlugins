@@ -37,47 +37,47 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <sys/stat.h>
+#include <time.h>
 
 /*************************** CONFIGURATION ***************************/
 // See README.md for a description of these options.
 
 #define COMPACT_OUTPUT
 
-//#define RAGEXERE
+// #define RAGEXERE
 
-//#define CLIENTVER 20140101
+// #define CLIENTVER 20140101
 
 /************************* END CONFIGURATION *************************/
 
 #ifdef COMPACT_OUTPUT
-#define OUT_INDENT ""
-#define OUT_SEPARATOR " "
-#define OUT_FINDENT " "
+#	define OUT_INDENT ""
+#	define OUT_SEPARATOR " "
+#	define OUT_FINDENT " "
 #else
-#define OUT_INDENT "\t"
-#define OUT_SEPARATOR "\n"
-#define OUT_FINDENT "\t"
+#	define OUT_INDENT "\t"
+#	define OUT_SEPARATOR "\n"
+#	define OUT_FINDENT "\t"
 #endif
 
 #ifdef RAGEXERE
-#define NAMESUFFIX "krsak"
+#	define NAMESUFFIX "krsak"
 #else
-#define NAMESUFFIX "krpri"
+#	define NAMESUFFIX "krpri"
 #endif
 
 #ifndef CLIENTVER
-#define CLIENTVER PACKETVER
+#	define CLIENTVER PACKETVER
 #endif
 
 #define DIRECTORYNAME "navigation"
 
 HPExport struct hplugin_info pinfo = {
-	"naviluagenerator",  // Plugin name
-	SERVER_TYPE_MAP,     // Which server types this plugin works with?
-	"0.1",               // Plugin version
-	HPM_VERSION,         // HPM Version (don't change, macro is automatically updated)
+	"naviluagenerator", // Plugin name
+	SERVER_TYPE_MAP,    // Which server types this plugin works with?
+	"0.1",              // Plugin version
+	HPM_VERSION,        // HPM Version (don't change, macro is automatically updated)
 };
 
 // We need a bigger max path length than stock Hercules
@@ -176,7 +176,7 @@ static int add_path(struct node_heap *heap, int16 x, int16 y, int g_cost, struct
 {
 	int i = calc_index(x, y);
 
-	if (tpused[i] != 0 && tpused[i] == 1+(x<<16 | y)) { // We processed this node before
+	if (tpused[i] != 0 && tpused[i] == 1 + (x << 16 | y)) { // We processed this node before
 		if (g_cost < tp[i].g_cost) { // New path to this node is better than old one
 			// Update costs and parent
 			tp[i].g_cost = g_cost;
@@ -184,8 +184,7 @@ static int add_path(struct node_heap *heap, int16 x, int16 y, int g_cost, struct
 			tp[i].f_cost = g_cost + h_cost;
 			if (tp[i].flag == SET_CLOSED) {
 				heap_push_node(heap, &tp[i]); // Put it in open set again
-			}
-			else if (heap_update_node(heap, &tp[i])) {
+			} else if (heap_update_node(heap, &tp[i])) {
 				return 1;
 			}
 			tp[i].flag = SET_OPEN;
@@ -203,7 +202,7 @@ static int add_path(struct node_heap *heap, int16 x, int16 y, int g_cost, struct
 	tp[i].parent = parent;
 	tp[i].f_cost = g_cost + h_cost;
 	tp[i].flag = SET_OPEN;
-	tpused[i] = 1+(x<<16 | y);
+	tpused[i] = 1 + (x << 16 | y);
 	heap_push_node(heap, &tp[i]);
 	return 0;
 }
@@ -216,7 +215,14 @@ static int add_path(struct node_heap *heap, int16 x, int16 y, int g_cost, struct
  * flag: &1 = easy path search only
  * cell: type of obstruction to check for
  *------------------------------------------*/
-static bool path_search_navi(struct walkpath_data_navi *wpd, const struct block_list *bl, int16 m, int16 x0, int16 y0, int16 x1, int16 y1, cell_chk cell)
+static bool path_search_navi(struct walkpath_data_navi *wpd,
+                             const struct block_list *bl,
+                             int16 m,
+                             int16 x0,
+                             int16 y0,
+                             int16 x1,
+                             int16 y1,
+                             cell_chk cell)
 {
 	struct map_data *md;
 	struct walkpath_data_navi s_wpd;
@@ -230,7 +236,7 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, const struct block_
 		return false;
 	md = &map->list[m];
 
-	//Do not check starting cell as that would get you stuck.
+	// Do not check starting cell as that would get you stuck.
 	if (x0 < 0 || x0 >= md->xs || y0 < 0 || y0 >= md->ys /*|| md->getcellp(md, bl, x0, y0, cell)*/)
 		return false;
 
@@ -238,7 +244,7 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, const struct block_
 	if (x1 < 0 || x1 >= md->xs || y1 < 0 || y1 >= md->ys || md->getcellp(md, bl, x1, y1, cell))
 		return false;
 
-	if( x0 == x1 && y0 == y1 ) {
+	if (x0 == x1 && y0 == y1) {
 		wpd->path_len = 0;
 		wpd->path_pos = 0;
 		return true;
@@ -269,11 +275,11 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, const struct block_
 		tp[i].g_cost = 0;
 		tp[i].f_cost = heuristic(x0, y0, x1, y1);
 		tp[i].flag   = SET_OPEN;
-		tpused[i] = 1+(x0<<16 | y0);
+		tpused[i]    = 1 + (x0 << 16 | y0);
 
 		heap_push_node(&open_set, &tp[i]); // Put start node to 'open' set
 
-		for(;;) {
+		for (;;) {
 			int e = 0; // error flag
 			register int x, y;
 
@@ -306,29 +312,57 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, const struct block_
 				break;
 			}
 
-			if (y < ys && !md->getcellp(md, bl, x, y+1, cell)) allowed_dirs |= DIR_NORTH;
-			if (y >  0 && !md->getcellp(md, bl, x, y-1, cell)) allowed_dirs |= DIR_SOUTH;
-			if (x < xs && !md->getcellp(md, bl, x+1, y, cell)) allowed_dirs |= DIR_EAST;
-			if (x >  0 && !md->getcellp(md, bl, x-1, y, cell)) allowed_dirs |= DIR_WEST;
+			if (y < ys && !md->getcellp(md, bl, x, y + 1, cell))
+				allowed_dirs |= DIR_NORTH;
+			if (y > 0 && !md->getcellp(md, bl, x, y - 1, cell))
+				allowed_dirs |= DIR_SOUTH;
+			if (x < xs && !md->getcellp(md, bl, x + 1, y, cell))
+				allowed_dirs |= DIR_EAST;
+			if (x > 0 && !md->getcellp(md, bl, x - 1, y, cell))
+				allowed_dirs |= DIR_WEST;
 
 #define chk_dir(d) ((allowed_dirs & (d)) == (d))
 			// Process neighbors of current node
-			if (chk_dir(DIR_SOUTH|DIR_EAST) && !md->getcellp(md, bl, x+1, y-1, cell))
-				e += add_path(&open_set, x+1, y-1, g_cost + MOVE_DIAGONAL_COST, current, heuristic(x+1, y-1, x1, y1)); // (x+1, y-1) 5
-			if (chk_dir(DIR_EAST))
-				e += add_path(&open_set, x+1, y, g_cost + MOVE_COST, current, heuristic(x+1, y, x1, y1)); // (x+1, y) 6
-			if (chk_dir(DIR_NORTH|DIR_EAST) && !md->getcellp(md, bl, x+1, y+1, cell))
-				e += add_path(&open_set, x+1, y+1, g_cost + MOVE_DIAGONAL_COST, current, heuristic(x+1, y+1, x1, y1)); // (x+1, y+1) 7
-			if (chk_dir(DIR_NORTH))
-				e += add_path(&open_set, x, y+1, g_cost + MOVE_COST, current, heuristic(x, y+1, x1, y1)); // (x, y+1) 0
-			if (chk_dir(DIR_NORTH|DIR_WEST) && !md->getcellp(md, bl, x-1, y+1, cell))
-				e += add_path(&open_set, x-1, y+1, g_cost + MOVE_DIAGONAL_COST, current, heuristic(x-1, y+1, x1, y1)); // (x-1, y+1) 1
-			if (chk_dir(DIR_WEST))
-				e += add_path(&open_set, x-1, y, g_cost + MOVE_COST, current, heuristic(x-1, y, x1, y1)); // (x-1, y) 2
-			if (chk_dir(DIR_SOUTH|DIR_WEST) && !md->getcellp(md, bl, x-1, y-1, cell))
-				e += add_path(&open_set, x-1, y-1, g_cost + MOVE_DIAGONAL_COST, current, heuristic(x-1, y-1, x1, y1)); // (x-1, y-1) 3
-			if (chk_dir(DIR_SOUTH))
-				e += add_path(&open_set, x, y-1, g_cost + MOVE_COST, current, heuristic(x, y-1, x1, y1)); // (x, y-1) 4
+			if (chk_dir(DIR_SOUTH | DIR_EAST) && !md->getcellp(md, bl, x + 1, y - 1, cell)) {
+				// (x+1, y-1) 5
+				e += add_path(&open_set, x + 1, y - 1, g_cost + MOVE_DIAGONAL_COST, current,
+				              heuristic(x + 1, y - 1, x1, y1));
+			}
+			if (chk_dir(DIR_EAST)) {
+				// (x+1, y) 6
+				e += add_path(&open_set, x + 1, y, g_cost + MOVE_COST, current,
+				              heuristic(x + 1, y, x1, y1));
+			}
+			if (chk_dir(DIR_NORTH | DIR_EAST) && !md->getcellp(md, bl, x + 1, y + 1, cell)) {
+				// (x+1, y+1) 7
+				e += add_path(&open_set, x + 1, y + 1, g_cost + MOVE_DIAGONAL_COST, current,
+				              heuristic(x + 1, y + 1, x1, y1));
+			}
+			if (chk_dir(DIR_NORTH)) {
+				// (x, y+1) 0
+				e += add_path(&open_set, x, y + 1, g_cost + MOVE_COST, current,
+				              heuristic(x, y + 1, x1, y1));
+			}
+			if (chk_dir(DIR_NORTH | DIR_WEST) && !md->getcellp(md, bl, x - 1, y + 1, cell)) {
+				// (x-1, y+1) 1
+				e += add_path(&open_set, x - 1, y + 1, g_cost + MOVE_DIAGONAL_COST, current,
+				              heuristic(x - 1, y + 1, x1, y1));
+			}
+			if (chk_dir(DIR_WEST)) {
+				// (x-1, y) 2
+				e += add_path(&open_set, x - 1, y, g_cost + MOVE_COST, current,
+				              heuristic(x - 1, y, x1, y1));
+			}
+			if (chk_dir(DIR_SOUTH | DIR_WEST) && !md->getcellp(md, bl, x - 1, y - 1, cell)) {
+				// (x-1, y-1) 3
+				e += add_path(&open_set, x - 1, y - 1, g_cost + MOVE_DIAGONAL_COST, current,
+				              heuristic(x - 1, y - 1, x1, y1));
+			}
+			if (chk_dir(DIR_SOUTH)) {
+				// (x, y-1) 4
+				e += add_path(&open_set, x, y - 1, g_cost + MOVE_COST, current,
+				              heuristic(x, y - 1, x1, y1));
+			}
 #undef chk_dir
 			if (e) {
 				BHEAP_CLEAR(open_set);
@@ -336,7 +370,8 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, const struct block_
 			}
 		}
 
-		for (it = current; it->parent != NULL; it = it->parent, len++);
+		for (it = current; it->parent != NULL; it = it->parent, len++)
+			;
 		if (len > (int)sizeof(wpd->path)) {
 			return false;
 		}
@@ -344,7 +379,7 @@ static bool path_search_navi(struct walkpath_data_navi *wpd, const struct block_
 		// Recreate path
 		wpd->path_len = len;
 		wpd->path_pos = 0;
-		for (it = current, j = len-1; j >= 0; it = it->parent, j--) {
+		for (it = current, j = len - 1; j >= 0; it = it->parent, j--) {
 			register int dx, dy;
 			dx = it->x - it->parent->x;
 			dy = it->y - it->parent->y;
@@ -394,26 +429,29 @@ enum {
 	WARPLOG_TYPE_AIRPORT   = 205, // airport
 };
 
-void atcommand_createnavigationlua_sub_mob(FILE *fp, int m, const struct mob_db *mobinfo, int amount, int mob_global_idx)
+void atcommand_createnavigationlua_sub_mob(FILE *fp,
+                                           int m,
+                                           const struct mob_db *mobinfo,
+                                           int amount,
+                                           int mob_global_idx)
 {
 	fprintf(fp, OUT_INDENT "{" OUT_SEPARATOR);
 	fprintf(fp, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, map->list[m].name);     // Map gat
 	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, mob_global_idx);            // Global ID
 	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, mobinfo->mexp ? 301 : 300); // 300 = Normal, 301 = MVP
 #if CLIENTVER >= 20140000
-	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, (amount<<16)|mobinfo->vd.class);
-	                                                                                   // Spawn amount << 16 | Mob class
+	// Spawn amount << 16 | Mob class
+	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, (amount << 16) | mobinfo->vd.class);
 #else /* CLIENTVER < 20140000 */
-	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, mobinfo->vd.class);         // Mob Class
+	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, mobinfo->vd.class); // Mob Class
 #endif /* CLIENTVER */
-	fprintf(fp, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, mobinfo->jname);        // Mob Name
-	fprintf(fp, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, mobinfo->sprite);       // Sprite Name
-	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, mobinfo->lv);               // Mob Level
+	fprintf(fp, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, mobinfo->jname);  // Mob Name
+	fprintf(fp, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, mobinfo->sprite); // Sprite Name
+	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, mobinfo->lv);         // Mob Level
+	// Element << 16 | Size << 8 | Race
 	fprintf(fp, OUT_INDENT OUT_INDENT "%u," OUT_SEPARATOR,
-			((uint32)(mobinfo->status.ele_lv*20+mobinfo->status.def_ele) << 16)
-			| ((uint32)mobinfo->status.size << 8)
-			| mobinfo->status.race);
-	                                                                                   // Element << 16 | Size << 8 | Race
+	        ((uint32)(mobinfo->status.ele_lv * 20 + mobinfo->status.def_ele) << 16)
+	                        | ((uint32)mobinfo->status.size << 8) | mobinfo->status.race);
 	fprintf(fp, OUT_INDENT "},\n");
 }
 
@@ -426,10 +464,11 @@ void atcommand_createnavigationlua_sub_map(FILE *fp, int m)
 	 * A possible improvement to this plugin would be to have it read mapnametable.txt and store them into a strdb.
 	 */
 	fprintf(fp, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, map->list[m].name); // Map Name
-	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, strstr(map->list[m].name, "_in") ? 5003 : (strstr(map->list[m].name, "air") ? 5002 : 5001));
-	                                                                               // 5001 = normal, 5002 = airport/airship, 5003 = indoor maps
-	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, map->list[m].xs);       // Map size X
-	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, map->list[m].ys);       // Map size Y
+	// 5001 = normal, 5002 = airport/airship, 5003 = indoor maps
+	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR,
+	        strstr(map->list[m].name, "_in") ? 5003 : (strstr(map->list[m].name, "air") ? 5002 : 5001));
+	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, map->list[m].xs); // Map size X
+	fprintf(fp, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, map->list[m].ys); // Map size Y
 	fprintf(fp, OUT_INDENT "},\n");
 }
 
@@ -444,19 +483,22 @@ void atcommand_createnavigationlua_sub_warp(FILE *fp_link, const struct npc_data
 	fprintf(fp_link, OUT_INDENT "{" OUT_SEPARATOR);
 	fprintf(fp_link, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, map->list[nd->bl.m].name); // Map gat
 	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, nda->npcid);                   // GID
-	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, 200);                          // 200 = warp , 201 = npc script (free?), 202 = Kafra Dungeon Warp,
-	                                                                                           // 203 = Cool Event Dungeon Warp, 204 Kafra/Cool Event/Alberta warp,
-	                                                                                           // 205 = airport  (Currently we only support warps)
-	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, (nd->vd.class == WARP_CLASS) ? 99999 : nd->vd.class);
-	                                                                                           // sprite id, 99999 = warp portal
-	fprintf(fp_link, OUT_INDENT OUT_INDENT "\"%s_%s_%d\"," OUT_SEPARATOR, map->list[nd->bl.m].name, map->list[mnext].name, nlink);
-	                                                                                           // Name
-	fprintf(fp_link, OUT_INDENT OUT_INDENT "\"\"," OUT_SEPARATOR);                             // Unique Name
-	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, nd->bl.x);                     // Link X
-	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, nd->bl.y);                     // Link Y
-	fprintf(fp_link, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, map->list[mnext].name);    // Link to Map
-	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, nd->u.warp.x);                 // Link to X
-	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d" OUT_SEPARATOR, nd->u.warp.y);                  // Link to Y
+	// 200 = warp , 201 = npc script (free?), 202 = Kafra Dungeon Warp,
+	// 203 = Cool Event Dungeon Warp, 204 Kafra/Cool Event/Alberta warp,
+	// 205 = airport  (Currently we only support warps)
+	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, 200);
+	// sprite id, 99999 = warp portal
+	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR,
+	        (nd->vd.class == WARP_CLASS) ? 99999 : nd->vd.class);
+	// Name
+	fprintf(fp_link, OUT_INDENT OUT_INDENT "\"%s_%s_%d\"," OUT_SEPARATOR, map->list[nd->bl.m].name,
+	        map->list[mnext].name, nlink);
+	fprintf(fp_link, OUT_INDENT OUT_INDENT "\"\"," OUT_SEPARATOR);                          // Unique Name
+	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, nd->bl.x);                  // Link X
+	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, nd->bl.y);                  // Link Y
+	fprintf(fp_link, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, map->list[mnext].name); // Link to Map
+	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, nd->u.warp.x);              // Link to X
+	fprintf(fp_link, OUT_INDENT OUT_INDENT "%d" OUT_SEPARATOR, nd->u.warp.y);               // Link to Y
 	fprintf(fp_link, OUT_INDENT "},\n");
 }
 
@@ -473,20 +515,21 @@ void atcommand_createnavigationlua_sub_npc(FILE *fp_npc, const struct npc_data *
 
 	safestrncpy(visible_name, nd->name, sizeof(visible_name));
 
-	delimiter = strchr(visible_name,'#');
+	delimiter = strchr(visible_name, '#');
 	if (delimiter != NULL)
 		*delimiter = '\0';
 
 	fprintf(fp_npc, OUT_INDENT "{" OUT_SEPARATOR);
 	fprintf(fp_npc, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, map->list[nd->bl.m].name); // Map gat
 	fprintf(fp_npc, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, nda->npcid);                   // GID
-	fprintf(fp_npc, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, (nd->subtype == SHOP || nd->subtype == CASHSHOP) ? 102 : 101);
-	                                                                                          // 101 = Npc, 102 = Trader
-	fprintf(fp_npc, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, nd->class_);                   // Sprite ID
-	fprintf(fp_npc, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, visible_name);             // NPC Name
-	fprintf(fp_npc, OUT_INDENT OUT_INDENT "\"\"," OUT_SEPARATOR);                             // Unique Name
-	fprintf(fp_npc, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, nd->bl.x);                     // X
-	fprintf(fp_npc, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, nd->bl.y);                     // Y
+	// 101 = Npc, 102 = Trader
+	fprintf(fp_npc, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR,
+	        (nd->subtype == SHOP || nd->subtype == CASHSHOP) ? 102 : 101);
+	fprintf(fp_npc, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, nd->class_);       // Sprite ID
+	fprintf(fp_npc, OUT_INDENT OUT_INDENT "\"%s\"," OUT_SEPARATOR, visible_name); // NPC Name
+	fprintf(fp_npc, OUT_INDENT OUT_INDENT "\"\"," OUT_SEPARATOR);                 // Unique Name
+	fprintf(fp_npc, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, nd->bl.x);         // X
+	fprintf(fp_npc, OUT_INDENT OUT_INDENT "%d," OUT_SEPARATOR, nd->bl.y);         // Y
 	fprintf(fp_npc, OUT_INDENT "},\n");
 }
 
@@ -498,8 +541,8 @@ bool createdirectory(const char *dirname)
 			return false;
 	}
 #else /* Not WIN32 */
-	struct stat st = { 0 };
-	if (stat(dirname, &st) == -1 ) {
+	struct stat st = {0};
+	if (stat(dirname, &st) == -1) {
 		if (mkdir(dirname, 0755) != 0)
 			return false;
 	}
@@ -513,12 +556,12 @@ void writeheader(FILE *fp, const char *table_name)
 	const struct tm *lt = localtime(&t);
 
 	fprintf(fp,
-		"-- File generated by the Hercules naviluagenerator plugin\n"
-		"-- http://herc.ws / http://github.com/HerculesWS/StaffPlugins\n"
-		"-- Last Change: %04d-%02d-%02d\n"
-		"\n"
-		"%s = {\n",
-		lt->tm_year+1900, lt->tm_mon+1, lt->tm_mday, table_name);
+	        "-- File generated by the Hercules naviluagenerator plugin\n"
+	        "-- http://herc.ws / http://github.com/HerculesWS/StaffPlugins\n"
+	        "-- Last Change: %04d-%02d-%02d\n"
+	        "\n"
+	        "%s = {\n",
+	        lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday, table_name);
 }
 
 // Converts NPC warp data to unified s_warplog_warp structure.
@@ -559,7 +602,7 @@ bool linkdata_convert(const struct s_map_npcdata *npcdata, int idx, bool inner, 
 bool atcommand_createnavigationlua_sub(void)
 {
 	int global_mob_idx = 17104;
-	int n=0;
+	int n = 0;
 	int m;
 	int mobidx, npcidx, warpidx;
 	FILE *fp_mob, *fp_map, *fp_link, *fp_npc, *fp_npcdist, *fp_linkdist;
@@ -583,7 +626,8 @@ bool atcommand_createnavigationlua_sub(void)
 	fp_npcdist = fopen(DIRECTORYNAME PATHSEP_STR "navi_npcdistance_" NAMESUFFIX ".lua", "wt+");
 	fp_linkdist = fopen(DIRECTORYNAME PATHSEP_STR "navi_linkdistance_" NAMESUFFIX ".lua", "wt+");
 
-	if (fp_mob == NULL || fp_map == NULL || fp_link == NULL || fp_npc == NULL || fp_npcdist == NULL || fp_linkdist == NULL) {
+	if (fp_mob == NULL || fp_map == NULL || fp_link == NULL || fp_npc == NULL || fp_npcdist == NULL
+	    || fp_linkdist == NULL) {
 		if (fp_mob != NULL)
 			fclose(fp_mob);
 		if (fp_map != NULL)
@@ -612,7 +656,7 @@ bool atcommand_createnavigationlua_sub(void)
 	writeheader(fp_linkdist, "Navi_Distance");
 
 	for (m = 0; m < map->count; m++) {
-		//int nmapnpc=0;
+		// int nmapnpc=0;
 
 		atcommand_createnavigationlua_sub_map(fp_map, m);
 
@@ -642,7 +686,8 @@ bool atcommand_createnavigationlua_sub(void)
 
 				nlink++;
 			} else {
-				if (nd->class_ == FAKE_NPC || nd->class_ == INVISIBLE_CLASS || nd->class_ == HIDDEN_WARP_CLASS || nd->class_ == FLAG_CLASS)
+				if (nd->class_ == FAKE_NPC || nd->class_ == INVISIBLE_CLASS
+				    || nd->class_ == HIDDEN_WARP_CLASS || nd->class_ == FLAG_CLASS)
 					continue;
 
 				nda->npcid = 11984 + nnpc;
@@ -667,11 +712,12 @@ bool atcommand_createnavigationlua_sub(void)
 			if (mobinfo == mob->dummy)
 				continue;
 
-			atcommand_createnavigationlua_sub_mob(fp_mob, m, mobinfo, map->list[m].moblist[mobidx]->num, global_mob_idx+n);
+			atcommand_createnavigationlua_sub_mob(fp_mob, m, mobinfo, map->list[m].moblist[mobidx]->num,
+			                                      global_mob_idx + n);
 
 			n++;
 		}
-		ShowStatus("Created %s objects list (%d/%d)\n", map->list[m].name, m+1, map->count);
+		ShowStatus("Created %s objects list (%d/%d)\n", map->list[m].name, m + 1, map->count);
 	}
 
 	fprintf(fp_mob, "}\n");
@@ -688,11 +734,13 @@ bool atcommand_createnavigationlua_sub(void)
 	// NPC distance lua
 	for (m = 0; m < map->count; m++) {
 		if (map_npcdata[m].nnpcs == 0 || map_npcdata[m].ninner_warps == 0) {
-			ShowStatus("Skipped %s NPC distance table, no NPCs in map (%d/%d)\n", map->list[m].name, m+1, map->count);
+			ShowStatus("Skipped %s NPC distance table, no NPCs in map (%d/%d)\n", map->list[m].name, m + 1,
+			           map->count);
 			continue;
 		}
 
-		fprintf(fp_npcdist, OUT_INDENT "\"%s\", %d," OUT_SEPARATOR, map->list[m].name, map_npcdata[m].nnpcs); // Map gat, num of Objects
+		// Map gat, num of Objects
+		fprintf(fp_npcdist, OUT_INDENT "\"%s\", %d," OUT_SEPARATOR, map->list[m].name, map_npcdata[m].nnpcs);
 		fprintf(fp_npcdist, OUT_INDENT "{\n");
 
 		for (npcidx = 0; npcidx < map_npcdata[m].nnpcs; npcidx++) {
@@ -704,9 +752,11 @@ bool atcommand_createnavigationlua_sub(void)
 				continue;
 			}
 
-			//int nwarps=0;
+			// int nwarps = 0;
 
-			fprintf(fp_npcdist, OUT_INDENT OUT_FINDENT "{ %d, -- GID (%s %s,%d,%d)\n", nda->npcid, nd->name, map->list[nd->bl.m].name, nd->bl.x, nd->bl.y); // NPC GID
+			// NPC GID
+			fprintf(fp_npcdist, OUT_INDENT OUT_FINDENT "{ %d, -- GID (%s %s,%d,%d)\n", nda->npcid, nd->name,
+			        map->list[nd->bl.m].name, nd->bl.x, nd->bl.y);
 			for (warpidx = 0; warpidx < map_npcdata[m].ninner_warps; warpidx++) {
 				struct s_warplog_warp w;
 				const struct npc_data *wnd = map_npcdata[m].inner_warps[warpidx];
@@ -719,10 +769,15 @@ bool atcommand_createnavigationlua_sub(void)
 					continue;
 				}
 
-				if (!path_search_navi(&wpd, &nd->bl, m, nd->bl.x, nd->bl.y, wnd->u.warp.x, wnd->u.warp.y, CELL_CHKNOREACH))
+				if (!path_search_navi(&wpd, &nd->bl, m, nd->bl.x, nd->bl.y, wnd->u.warp.x,
+				                      wnd->u.warp.y, CELL_CHKNOREACH))
 					continue;
 
-				fprintf(fp_npcdist, OUT_INDENT OUT_FINDENT OUT_FINDENT "{ \"%s\", %d, %d }, -- Srcmap, gid, dist (%s,%d,%d)\n", map->list[w.src.map].name, w.gid, wpd.path_len, map->list[w.src.map].name, w.src.x, w.src.y);
+				fprintf(fp_npcdist,
+				        OUT_INDENT OUT_FINDENT OUT_FINDENT
+				        "{ \"%s\", %d, %d }, -- Srcmap, gid, dist (%s,%d,%d)\n",
+				        map->list[w.src.map].name, w.gid, wpd.path_len, map->list[w.src.map].name,
+				        w.src.x, w.src.y);
 			}
 			fprintf(fp_npcdist, OUT_INDENT OUT_FINDENT OUT_FINDENT "{ \"\", 0, 0 }\n");
 			fprintf(fp_npcdist, OUT_INDENT OUT_FINDENT "},\n");
@@ -730,7 +785,7 @@ bool atcommand_createnavigationlua_sub(void)
 
 		fprintf(fp_npcdist, OUT_INDENT "},\n");
 
-		ShowStatus("Created %s NPC distance table (%d/%d)\n", map->list[m].name, m+1, map->count);
+		ShowStatus("Created %s NPC distance table (%d/%d)\n", map->list[m].name, m + 1, map->count);
 	}
 
 	fprintf(fp_npcdist, "}\n");
@@ -739,7 +794,9 @@ bool atcommand_createnavigationlua_sub(void)
 	ShowStatus("Stage 3: Creating Warp distance tables...\n");
 
 	for (m = 0; m < map->count; m++) {
-		fprintf(fp_linkdist, OUT_INDENT "\"%s\",%d," OUT_SEPARATOR, map->list[m].name, map_npcdata[m].nouter_warps); // Map gat, num of outer warps
+		// Map gat, num of outer warps
+		fprintf(fp_linkdist, OUT_INDENT "\"%s\",%d," OUT_SEPARATOR, map->list[m].name,
+		        map_npcdata[m].nouter_warps);
 		fprintf(fp_linkdist, OUT_INDENT "{\n");
 
 		for (warpidx = 0; warpidx < map_npcdata[m].nouter_warps; warpidx++) {
@@ -748,7 +805,9 @@ bool atcommand_createnavigationlua_sub(void)
 			if (!linkdata_convert(&map_npcdata[m], warpidx, false, &w1))
 				continue;
 
-			fprintf(fp_linkdist, OUT_INDENT OUT_FINDENT "{ %d, -- GID (%s,%d,%d)\n", w1.gid, map->list[w1.src.map].name, w1.src.x, w1.src.y); // Warp GID
+			// Warp GID
+			fprintf(fp_linkdist, OUT_INDENT OUT_FINDENT "{ %d, -- GID (%s,%d,%d)\n", w1.gid,
+			        map->list[w1.src.map].name, w1.src.x, w1.src.y);
 
 			// ReachableFromSrc warps
 			for (warpidx2 = 0; warpidx2 < map_npcdata[m].nouter_warps; warpidx2++) {
@@ -760,10 +819,15 @@ bool atcommand_createnavigationlua_sub(void)
 				if (!linkdata_convert(&map_npcdata[m], warpidx2, false, &w2))
 					continue;
 
-				if (!path_search_navi(&wpd, NULL, m, w1.src.x, w1.src.y, w2.src.x, w2.src.y, CELL_CHKNOREACH))
+				if (!path_search_navi(&wpd, NULL, m, w1.src.x, w1.src.y, w2.src.x, w2.src.y,
+				                      CELL_CHKNOREACH))
 					continue;
 
-				fprintf(fp_linkdist, OUT_INDENT OUT_FINDENT OUT_FINDENT "{ \"P\", %d, %d }, -- ReachableFromSrc warp (%s,%d,%d)\n", w2.gid, wpd.path_len, map->list[m].name, w2.src.x, w2.src.y); // ReachableFromSrc warp
+				// ReachableFromSrc warp
+				fprintf(fp_linkdist,
+				        OUT_INDENT OUT_FINDENT OUT_FINDENT
+				        "{ \"P\", %d, %d }, -- ReachableFromSrc warp (%s,%d,%d)\n",
+				        w2.gid, wpd.path_len, map->list[m].name, w2.src.x, w2.src.y);
 			}
 
 			// ReachableFromDst warps
@@ -773,16 +837,21 @@ bool atcommand_createnavigationlua_sub(void)
 				if (!linkdata_convert(&map_npcdata[w1.dst.map], warpidx2, false, &w2))
 					continue;
 
-				if (!path_search_navi(&wpd, NULL, w1.dst.map, w1.dst.x, w1.dst.y, w2.src.x, w2.src.y, CELL_CHKNOREACH))
+				if (!path_search_navi(&wpd, NULL, w1.dst.map, w1.dst.x, w1.dst.y, w2.src.x, w2.src.y,
+				                      CELL_CHKNOREACH))
 					continue;
 
-				fprintf(fp_linkdist, OUT_FINDENT OUT_FINDENT OUT_FINDENT "{ \"E\", %d, %d }, -- ReachableFromDst warp (%s,%d,%d)\n", w2.gid, wpd.path_len, map->list[w1.dst.map].name, w2.src.x, w2.src.y); // ReachableFromDst warp
+				// ReachableFromDst warp
+				fprintf(fp_linkdist,
+				        OUT_FINDENT OUT_FINDENT OUT_FINDENT
+				        "{ \"E\", %d, %d }, -- ReachableFromDst warp (%s,%d,%d)\n",
+				        w2.gid, wpd.path_len, map->list[w1.dst.map].name, w2.src.x, w2.src.y);
 			}
 			fprintf(fp_linkdist, OUT_INDENT OUT_FINDENT OUT_FINDENT "{ \"NULL\", 0, 0 }\n");
 			fprintf(fp_linkdist, OUT_INDENT OUT_FINDENT "},\n");
 		}
 		fprintf(fp_linkdist, OUT_INDENT "},\n");
-		ShowStatus("Created %s Warp distance table (%d/%d)\n", map->list[m].name, m+1, map->count);
+		ShowStatus("Created %s Warp distance table (%d/%d)\n", map->list[m].name, m + 1, map->count);
 	}
 
 	aFree(map_npcdata);
