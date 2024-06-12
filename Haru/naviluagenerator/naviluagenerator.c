@@ -600,7 +600,7 @@ bool atcommand_createnavigationlua_sub(void)
 		return false;
 	}
 
-	map_npcdata = aCalloc(sizeof(struct s_map_npcdata), map->count);
+	map_npcdata = aCalloc(map->count, sizeof(struct s_map_npcdata));
 
 	ShowStatus("Stage 1: creating maps and objects list...\n");
 
